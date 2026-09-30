@@ -12,5 +12,3 @@ export const totpVerifySchema = z.object({
     .trim()
     .regex(/^\d{6}$/, "Der Code besteht aus 6 Ziffern."),
 });
-
-export type FormState = { error: string | null };

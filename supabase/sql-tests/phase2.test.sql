@@ -137,6 +137,26 @@ begin
 end;
 $$;
 
+-- Contacts: single main contact and automatic consent date.
+do $$
+declare
+  c_id uuid;
+  k1 uuid;
+  k2 uuid;
+begin
+  select id into c_id from public.companies where name = 'Beispiel GmbH';
+  insert into public.contacts (company_id, nachname, ist_hauptkontakt) values (c_id, 'Erste', true) returning id into k1;
+  insert into public.contacts (company_id, nachname, ist_hauptkontakt) values (c_id, 'Zweite', true) returning id into k2;
+  assert not (select ist_hauptkontakt from public.contacts where id = k1), 'old main contact not cleared';
+  assert (select ist_hauptkontakt from public.contacts where id = k2), 'new main contact not set';
+
+  update public.contacts set einwilligung_marketing = true where id = k1;
+  assert (select einwilligung_datum from public.contacts where id = k1) is not null, 'consent date not set';
+  update public.contacts set einwilligung_marketing = false where id = k1;
+  assert (select einwilligung_datum from public.contacts where id = k1) is null, 'consent date not cleared';
+end;
+$$;
+
 -- Another owner sees neither duplicates nor activity status of foreign rows.
 select set_config('request.jwt.claims',
   '{"sub":"22222222-2222-2222-2222-222222222222","aal":"aal2"}', true);

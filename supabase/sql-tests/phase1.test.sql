@@ -64,14 +64,6 @@ begin
   exception when raise_exception then
     null;
   end;
-
-  begin
-    insert into public.contacts (company_id, nachname, einwilligung_marketing)
-    select id, 'Mustermann', true from public.companies where kundennummer = 'K1001';
-    assert false, 'marketing consent without date was accepted';
-  exception when check_violation then
-    null;
-  end;
 end;
 $$;
 

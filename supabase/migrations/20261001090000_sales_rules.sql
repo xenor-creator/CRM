@@ -160,3 +160,48 @@ left join public.activities a
   on a.deal_id = d.id
   or (a.deal_id is null and a.company_id = d.company_id)
 group by d.id, d.owner_id, d.created_at;
+
+-- ---------------------------------------------------------------------------
+-- Contacts: one main contact per company, consent date maintained automatically
+-- ---------------------------------------------------------------------------
+
+create function public.ensure_single_main_contact()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+  update public.contacts
+  set ist_hauptkontakt = false
+  where company_id = new.company_id and id <> new.id and ist_hauptkontakt;
+  return new;
+end;
+$$;
+
+create trigger ensure_single_main_contact
+  before insert or update of ist_hauptkontakt, company_id on public.contacts
+  for each row when (new.ist_hauptkontakt)
+  execute function public.ensure_single_main_contact();
+
+create unique index contacts_one_main_per_company
+  on public.contacts (company_id) where ist_hauptkontakt;
+
+-- Granting consent records the time; withdrawing it clears the date.
+create function public.apply_consent_date()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+  if not new.einwilligung_marketing then
+    new.einwilligung_datum := null;
+  elsif new.einwilligung_datum is null then
+    new.einwilligung_datum := now();
+  end if;
+  return new;
+end;
+$$;
+
+create trigger apply_consent_date
+  before insert or update of einwilligung_marketing, einwilligung_datum on public.contacts
+  for each row execute function public.apply_consent_date();

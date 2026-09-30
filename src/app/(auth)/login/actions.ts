@@ -3,8 +3,9 @@
 import { redirect } from "next/navigation";
 
 import { TWO_FACTOR_PATH } from "@/lib/auth/routing";
+import type { FormState } from "@/lib/form-state";
 import { createClient } from "@/lib/supabase/server";
-import { loginSchema, type FormState } from "@/lib/validation/auth";
+import { loginSchema } from "@/lib/validation/auth";
 
 export async function login(_prev: FormState, formData: FormData): Promise<FormState> {
   const parsed = loginSchema.safeParse({

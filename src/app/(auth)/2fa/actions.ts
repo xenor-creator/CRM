@@ -3,8 +3,9 @@
 import { redirect } from "next/navigation";
 
 import { HOME_PATH } from "@/lib/auth/routing";
+import type { FormState } from "@/lib/form-state";
 import { createClient } from "@/lib/supabase/server";
-import { totpVerifySchema, type FormState } from "@/lib/validation/auth";
+import { totpVerifySchema } from "@/lib/validation/auth";
 
 export type EnrollmentResult =
   | { ok: true; factorId: string; qrCode: string; secret: string }
