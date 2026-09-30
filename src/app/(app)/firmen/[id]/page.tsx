@@ -3,6 +3,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { ActivityForm } from "@/components/activities/activity-form";
+import { TaskForm } from "@/components/activities/task-form";
+import { TaskList } from "@/components/activities/task-list";
 import { ActivityTimeline, timelineSelect } from "@/components/activity-timeline";
 import { CompanyStatusBadge } from "@/components/company-status-badge";
 import { DefinitionList } from "@/components/definition-list";
@@ -13,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatAddress } from "@/lib/address";
 import { requireVerifiedSession } from "@/lib/auth/session";
+import { berlinDate } from "@/lib/dates";
 import { formatDate, formatEuro } from "@/lib/format";
 import {
   invoiceStatusLabels,
@@ -35,7 +39,7 @@ export default async function CompanyPage(props: PageProps<"/firmen/[id]">) {
     notFound();
   }
 
-  const [contacts, deals, projects, retainers, invoices, activities] = await Promise.all([
+  const [contacts, deals, projects, retainers, invoices, activities, tasks] = await Promise.all([
     supabase
       .from("contacts")
       .select("id, vorname, nachname, email, telefon, position, ist_hauptkontakt")
@@ -68,7 +72,18 @@ export default async function CompanyPage(props: PageProps<"/firmen/[id]">) {
       .eq("company_id", id)
       .order("zeitpunkt", { ascending: false })
       .limit(100),
+    supabase
+      .from("tasks")
+      .select("id, titel, faellig_am, erledigt, prioritaet, deals(id, titel)")
+      .eq("company_id", id)
+      .eq("erledigt", false)
+      .order("faellig_am", { ascending: true, nullsFirst: false }),
   ]);
+
+  const contactOptions = (contacts.data ?? []).map((c) => ({ value: c.id, label: contactName(c) }));
+  const openDealOptions = (deals.data ?? [])
+    .filter((d) => d.deal_stages?.art === "offen")
+    .map((d) => ({ value: d.id, label: d.titel }));
 
   return (
     <>
@@ -256,8 +271,21 @@ export default async function CompanyPage(props: PageProps<"/firmen/[id]">) {
         </div>
 
         <div className="grid content-start gap-6">
+          <SectionCard title="Aufgaben">
+            <div className="grid gap-4">
+              <TaskList tasks={tasks.data ?? []} today={berlinDate()} showLinks />
+              <TaskForm links={{ company_id: id }} />
+            </div>
+          </SectionCard>
           <SectionCard title="Aktivitäten">
-            <ActivityTimeline activities={activities.data ?? []} />
+            <div className="grid gap-6">
+              <ActivityForm
+                links={{ company_id: id }}
+                contactOptions={contactOptions}
+                dealOptions={openDealOptions}
+              />
+              <ActivityTimeline activities={activities.data ?? []} />
+            </div>
           </SectionCard>
         </div>
       </div>

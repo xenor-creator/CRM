@@ -22,6 +22,7 @@ export function TextField({
   name,
   defaultValue,
   className,
+  id = name,
   ...props
 }: { label: string; name: string; defaultValue: string } & Omit<
   React.ComponentProps<"input">,
@@ -29,8 +30,8 @@ export function TextField({
 >) {
   return (
     <div className={cn("grid gap-2", className)}>
-      <Label htmlFor={name}>{label}</Label>
-      <Input id={name} name={name} defaultValue={defaultValue} {...props} />
+      <Label htmlFor={id}>{label}</Label>
+      <Input id={id} name={name} defaultValue={defaultValue} {...props} />
     </div>
   );
 }
@@ -40,6 +41,7 @@ export function TextAreaField({
   name,
   defaultValue,
   className,
+  id = name,
   ...props
 }: { label: string; name: string; defaultValue: string } & Omit<
   React.ComponentProps<"textarea">,
@@ -47,8 +49,8 @@ export function TextAreaField({
 >) {
   return (
     <div className={cn("grid gap-2", className)}>
-      <Label htmlFor={name}>{label}</Label>
-      <Textarea id={name} name={name} defaultValue={defaultValue} {...props} />
+      <Label htmlFor={id}>{label}</Label>
+      <Textarea id={id} name={name} defaultValue={defaultValue} {...props} />
     </div>
   );
 }
@@ -60,6 +62,7 @@ export function SelectField({
   options,
   emptyLabel,
   className,
+  id = name,
   ...props
 }: {
   label: string;
@@ -70,8 +73,8 @@ export function SelectField({
 } & Omit<React.ComponentProps<"select">, "name" | "defaultValue">) {
   return (
     <div className={cn("grid gap-2", className)}>
-      <Label htmlFor={name}>{label}</Label>
-      <NativeSelect id={name} name={name} defaultValue={defaultValue} {...props}>
+      <Label htmlFor={id}>{label}</Label>
+      <NativeSelect id={id} name={name} defaultValue={defaultValue} {...props}>
         {emptyLabel !== undefined && <option value="">{emptyLabel}</option>}
         {options.map((option) => (
           <option key={option.value} value={option.value}>

@@ -1,6 +1,7 @@
 import { Calendar, Mail, NotebookPen, Phone } from "lucide-react";
 import Link from "next/link";
 
+import { DeleteActivityButton } from "@/components/activities/delete-activity-button";
 import { formatDateTime } from "@/lib/format";
 import { activityTypLabels } from "@/lib/labels";
 import { contactName } from "@/lib/names";
@@ -55,6 +56,7 @@ export function ActivityTimeline({ activities }: { activities: TimelineActivity[
                 <p className="mt-1 text-sm break-words whitespace-pre-line">{activity.inhalt}</p>
               )}
             </div>
+            <DeleteActivityButton id={activity.id} />
           </li>
         );
       })}

@@ -1,10 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useActionState } from "react";
 
+import { DuplicateWarning } from "@/components/form/duplicate-warning";
 import {
-  CheckboxField,
   FormError,
   SelectField,
   SubmitButton,
@@ -18,11 +17,6 @@ import { companyStatusLabels, labelOptions, potenzialLabels } from "@/lib/labels
 import type { Tables } from "@/lib/supabase/database.types";
 
 type CompanyDefaults = Partial<Tables<"companies">>;
-
-const duplicateReasons: Record<string, string> = {
-  email: "gleiche E-Mail",
-  domain: "gleiche Domain",
-};
 
 export function CompanyForm({
   action,
@@ -39,7 +33,7 @@ export function CompanyForm({
   const v = (name: keyof CompanyDefaults) => valueOf(state, name, company[name] as string | number | null);
 
   return (
-    <form action={formAction} className="grid gap-6">
+    <form key={state.attempt} action={formAction} className="grid gap-6">
       <Card>
         <CardHeader>
           <CardTitle>Stammdaten</CardTitle>
@@ -118,30 +112,7 @@ export function CompanyForm({
         </Card>
       )}
 
-      {state.duplicates && state.duplicates.length > 0 && (
-        <Card className="border-amber-300 bg-amber-50 dark:bg-amber-950/30">
-          <CardHeader>
-            <CardTitle>Mögliche Dubletten</CardTitle>
-          </CardHeader>
-          <CardContent className="grid gap-3">
-            <ul className="grid gap-1 text-sm">
-              {state.duplicates.map((d) => (
-                <li key={d.company_id}>
-                  <Link href={`/firmen/${d.company_id}`} className="font-medium underline" target="_blank">
-                    {d.company_name}
-                  </Link>{" "}
-                  ({d.kundennummer}, {d.grund.split(",").map((g) => duplicateReasons[g] ?? g).join(" und ")})
-                </li>
-              ))}
-            </ul>
-            <CheckboxField
-              label="Ist keine Dublette, trotzdem anlegen"
-              name="duplikat_bestaetigt"
-              defaultChecked={false}
-            />
-          </CardContent>
-        </Card>
-      )}
+      <DuplicateWarning duplicates={state.duplicates} />
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <SubmitButton>{submitLabel}</SubmitButton>
