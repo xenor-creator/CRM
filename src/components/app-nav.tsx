@@ -2,6 +2,7 @@
 
 import {
   Building2,
+  CalendarCheck,
   FileText,
   FolderKanban,
   Handshake,
@@ -17,6 +18,7 @@ import { cn } from "@/lib/utils";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/heute", label: "Heute", icon: CalendarCheck },
   { href: "/firmen", label: "Firmen", icon: Building2 },
   { href: "/kontakte", label: "Kontakte", icon: Users },
   { href: "/deals", label: "Deals", icon: Handshake },

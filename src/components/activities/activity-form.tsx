@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 
 import { FormError, SelectField, SubmitButton, TextAreaField, TextField, valueOf } from "@/components/form/fields";
 import { createActivity } from "@/lib/actions/activities";
@@ -16,20 +16,28 @@ export type ActivityLinks = {
 };
 
 // Logs a call, mail, meeting or note. Fixed links are passed as hidden fields; optional
-// contact/deal choices are offered when options are given.
+// company/contact/deal choices are offered when options are given.
 export function ActivityForm({
-  links,
+  links = {},
+  companyOptions,
   contactOptions,
   dealOptions,
   idPrefix = "activity",
+  onSaved,
 }: {
-  links: ActivityLinks;
+  links?: ActivityLinks;
+  companyOptions?: Option[];
   contactOptions?: Option[];
   dealOptions?: Option[];
   idPrefix?: string;
+  onSaved?: () => void;
 }) {
   const [state, formAction] = useActionState(createActivity, initialFormState);
   const id = (name: string) => `${idPrefix}-${name}`;
+
+  useEffect(() => {
+    if (state.ok) onSaved?.();
+  }, [state, onSaved]);
 
   return (
     <form key={state.attempt} action={formAction} className="grid gap-3">
@@ -52,6 +60,16 @@ export function ActivityForm({
           defaultValue={valueOf(state, "zeitpunkt", "")}
           title="Leer lassen für jetzt"
         />
+        {companyOptions && (
+          <SelectField
+            label="Firma"
+            name="company_id"
+            id={id("company")}
+            defaultValue={valueOf(state, "company_id", "")}
+            options={companyOptions}
+            emptyLabel="Keine Firma"
+          />
+        )}
         {contactOptions && contactOptions.length > 0 && (
           <SelectField
             label="Kontakt"

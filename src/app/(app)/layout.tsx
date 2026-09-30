@@ -1,12 +1,18 @@
 import { LogOut } from "lucide-react";
 
 import { AppNav } from "@/components/app-nav";
+import { QuickCapture } from "@/components/quick-capture";
 import { Button } from "@/components/ui/button";
 import { signOut } from "@/lib/auth/actions";
 import { requireVerifiedSession } from "@/lib/auth/session";
+import { getCompanyOptions, getOpenDealOptions } from "@/lib/queries";
 
 export default async function AppLayout({ children }: LayoutProps<"/">) {
-  const { email } = await requireVerifiedSession();
+  const { supabase, email } = await requireVerifiedSession();
+  const [companyOptions, dealOptions] = await Promise.all([
+    getCompanyOptions(supabase),
+    getOpenDealOptions(supabase),
+  ]);
 
   return (
     <div className="flex min-h-svh flex-col md:flex-row">
@@ -19,6 +25,9 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
             </Button>
           </form>
         </div>
+        <div className="px-3 pb-2">
+          <QuickCapture companyOptions={companyOptions} dealOptions={dealOptions} />
+        </div>
         <AppNav className="flex gap-1 overflow-x-auto px-2 pb-2 md:flex-1 md:flex-col md:overflow-visible md:pb-0" />
         <div className="hidden border-t p-3 md:block">
           <p className="text-muted-foreground mb-2 truncate px-1 text-xs">{email}</p>
@@ -30,7 +39,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
           </form>
         </div>
       </aside>
-      <main className="flex-1 p-4 md:p-8">{children}</main>
+      <main className="min-w-0 flex-1 p-4 md:p-8">{children}</main>
     </div>
   );
 }

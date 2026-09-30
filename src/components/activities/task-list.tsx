@@ -81,8 +81,9 @@ export function TaskList({
               <p className="text-xs">
                 {task.faellig_am && (
                   <span className={dueStyles[due]}>
-                    {due === "ueberfaellig" ? "Überfällig seit " : "Fällig "}
-                    {formatDate(task.faellig_am)}
+                    {due === "heute"
+                      ? "Heute fällig"
+                      : `${due === "ueberfaellig" ? "Überfällig seit" : "Fällig"} ${formatDate(task.faellig_am)}`}
                   </span>
                 )}
                 {showLinks && task.companies && (
