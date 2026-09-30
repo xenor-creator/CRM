@@ -124,6 +124,7 @@ export type Database = {
           automatisierungspotenzial: Database["public"]["Enums"]["automatisierungspotenzial"] | null
           branche: string | null
           created_at: string
+          domain: string | null
           groesse: string | null
           id: string
           kundennummer: string
@@ -146,6 +147,7 @@ export type Database = {
           automatisierungspotenzial?: Database["public"]["Enums"]["automatisierungspotenzial"] | null
           branche?: string | null
           created_at?: string
+          domain?: never
           groesse?: string | null
           id?: string
           kundennummer?: string
@@ -168,6 +170,7 @@ export type Database = {
           automatisierungspotenzial?: Database["public"]["Enums"]["automatisierungspotenzial"] | null
           branche?: string | null
           created_at?: string
+          domain?: never
           groesse?: string | null
           id?: string
           kundennummer?: string
@@ -279,6 +282,7 @@ export type Database = {
       }
       deals: {
         Row: {
+          abgeschlossen_am: string | null
           company_id: string
           contact_id: string | null
           created_at: string
@@ -295,6 +299,7 @@ export type Database = {
           wert_monatlich: number
         }
         Insert: {
+          abgeschlossen_am?: string | null
           company_id: string
           contact_id?: string | null
           created_at?: string
@@ -311,6 +316,7 @@ export type Database = {
           wert_monatlich?: number
         }
         Update: {
+          abgeschlossen_am?: string | null
           company_id?: string
           contact_id?: string | null
           created_at?: string
@@ -945,7 +951,14 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      deal_activity_status: {
+        Row: {
+          deal_id: string | null
+          letzte_aktivitaet: string | null
+          owner_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       create_owner_defaults: {
@@ -953,6 +966,24 @@ export type Database = {
           p_owner: string
         }
         Returns: undefined
+      }
+      find_duplicates: {
+        Args: {
+          p_email?: string
+          p_website?: string
+        }
+        Returns: {
+          company_id: string
+          company_name: string
+          kundennummer: string
+          grund: string
+        }[]
+      }
+      is_freemail_domain: {
+        Args: {
+          domain: string
+        }
+        Returns: boolean
       }
       is_owner: {
         Args: {
@@ -967,6 +998,12 @@ export type Database = {
           p_jahr?: number
         }
         Returns: number
+      }
+      normalize_domain: {
+        Args: {
+          url: string
+        }
+        Returns: string
       }
     }
     Enums: {
