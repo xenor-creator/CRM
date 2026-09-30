@@ -63,15 +63,18 @@ export default async function CompaniesPage(props: PageProps<"/firmen">) {
 
   return (
     <>
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <PageHeader title="Firmen" description="Leads, Kunden und ehemalige Kunden." />
-        <Button asChild>
-          <Link href="/firmen/neu">
-            <Plus />
-            Neue Firma
-          </Link>
-        </Button>
-      </div>
+      <PageHeader
+        title="Firmen"
+        description="Leads, Kunden und ehemalige Kunden."
+        actions={
+          <Button asChild>
+            <Link href="/firmen/neu">
+              <Plus />
+              Neue Firma
+            </Link>
+          </Button>
+        }
+      />
 
       <form className="mb-4 grid gap-2 sm:grid-cols-[1fr_auto_auto_auto_auto]">
         <Input name="q" defaultValue={q} placeholder="Suche nach Name, Kundennummer, Domain, Ort" aria-label="Suche" />

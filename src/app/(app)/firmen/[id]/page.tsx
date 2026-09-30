@@ -7,9 +7,11 @@ import { ActivityTimeline, timelineSelect } from "@/components/activity-timeline
 import { CompanyStatusBadge } from "@/components/company-status-badge";
 import { DefinitionList } from "@/components/definition-list";
 import { ConfirmActionButton } from "@/components/form/confirm-action-button";
+import { PageHeader } from "@/components/page-header";
 import { EmptyHint, SectionCard } from "@/components/section-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { formatAddress } from "@/lib/address";
 import { requireVerifiedSession } from "@/lib/auth/session";
 import { formatDate, formatEuro } from "@/lib/format";
 import {
@@ -68,41 +70,41 @@ export default async function CompanyPage(props: PageProps<"/firmen/[id]">) {
       .limit(100),
   ]);
 
-  const address = [company.strasse, [company.plz, company.ort].filter(Boolean).join(" "), company.land]
-    .filter(Boolean)
-    .join("\n");
-
   return (
     <>
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-2xl font-semibold tracking-tight">{company.name}</h1>
+      <PageHeader
+        title={
+          <span className="flex flex-wrap items-center gap-2">
+            {company.name}
             <CompanyStatusBadge status={company.status} />
-          </div>
-          <p className="text-muted-foreground mt-1 text-sm">
+          </span>
+        }
+        description={
+          <>
             {company.kundennummer}
             {company.domain && <> · {company.domain}</>}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button asChild variant="outline" size="sm">
-            <Link href={`/firmen/${id}/bearbeiten`}>
-              <Pencil />
-              Bearbeiten
-            </Link>
-          </Button>
-          <ConfirmActionButton
-            action={deleteCompany.bind(null, id)}
-            confirmMessage={`„${company.name}“ mit allen Kontakten, Deals, Aktivitäten und Aufgaben löschen? Rechnungen bleiben erhalten.`}
-            variant="outline"
-            size="sm"
-          >
-            <Trash2 />
-            Löschen
-          </ConfirmActionButton>
-        </div>
-      </div>
+          </>
+        }
+        actions={
+          <>
+            <Button asChild variant="outline" size="sm">
+              <Link href={`/firmen/${id}/bearbeiten`}>
+                <Pencil />
+                Bearbeiten
+              </Link>
+            </Button>
+            <ConfirmActionButton
+              action={deleteCompany.bind(null, id)}
+              confirmMessage={`„${company.name}“ mit allen Kontakten, Deals, Aktivitäten und Aufgaben löschen? Rechnungen bleiben erhalten.`}
+              variant="outline"
+              size="sm"
+            >
+              <Trash2 />
+              Löschen
+            </ConfirmActionButton>
+          </>
+        }
+      />
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="grid content-start gap-6 lg:col-span-2">
@@ -113,7 +115,7 @@ export default async function CompanyPage(props: PageProps<"/firmen/[id]">) {
                 ["Branche", company.branche],
                 ["Größe", company.groesse],
                 ["Mitarbeiter", company.mitarbeiterzahl],
-                ["Adresse", address],
+                ["Adresse", formatAddress(company)],
                 ["USt-IdNr.", company.ust_id],
                 ["Tools", company.tool_stack.join(", ")],
                 [
