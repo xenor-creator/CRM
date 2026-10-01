@@ -17,6 +17,8 @@ import { formatDate, formatEuro } from "@/lib/format";
 import { invoiceStatusLabels, projectStatusLabels } from "@/lib/labels";
 import { formatMinutes, profitability } from "@/lib/projects";
 
+import { createProjectInvoice } from "../../rechnungen/actions";
+import { ProjectInvoiceForm } from "../../rechnungen/invoice-forms";
 import { addTimeEntry, deleteProject, deleteTimeEntry } from "../actions";
 import { ProjectTimer } from "../project-timer";
 import { TimeEntryForm } from "../time-entry-form";
@@ -184,6 +186,9 @@ export default async function ProjectPage(props: PageProps<"/projekte/[id]">) {
             ) : (
               <EmptyHint>Noch keine Rechnungen.</EmptyHint>
             )}
+            <div className="mt-4 border-t pt-4">
+              <ProjectInvoiceForm action={createProjectInvoice.bind(null, id)} />
+            </div>
           </SectionCard>
           <SectionCard title="Aufgaben">
             <div className="grid gap-4">

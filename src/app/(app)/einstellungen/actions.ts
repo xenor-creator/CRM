@@ -9,7 +9,7 @@ import { requireVerifiedSession } from "@/lib/auth/session";
 import { failure, success, type FormState } from "@/lib/form-state";
 import { createServiceClient } from "@/lib/supabase/service";
 import { firstIssue } from "@/lib/validation/fields";
-import { apiKeySchema, webhookUrlsSchema } from "@/lib/validation/settings";
+import { apiKeySchema, companySettingsSchema, webhookUrlsSchema } from "@/lib/validation/settings";
 import { dispatchDueWebhooks } from "@/lib/webhooks/dispatcher";
 import { isWebhookEvent } from "@/lib/webhooks/events";
 
@@ -121,4 +121,19 @@ export async function sendTestWebhook(event: string): Promise<TestResult> {
     return { ok: true, message: `Zugestellt (HTTP ${result.antwort_status}).` };
   }
   return { ok: false, message: `Fehlgeschlagen: ${result?.fehler ?? "unbekannter Fehler"}.` };
+}
+
+export async function saveCompanySettings(_prev: FormState, formData: FormData): Promise<FormState> {
+  const parsed = companySettingsSchema.safeParse(Object.fromEntries(formData));
+  if (!parsed.success) {
+    return failure(firstIssue(parsed.error), formData);
+  }
+  const { supabase, userId } = await requireVerifiedSession();
+  const { error } = await supabase.from("settings").update(parsed.data).eq("owner_id", userId);
+  if (error) {
+    console.error("save company settings failed", error);
+    return failure("Die Firmendaten konnten nicht gespeichert werden.", formData);
+  }
+  refresh();
+  return { ...success(), values: Object.fromEntries(Object.entries(parsed.data).map(([k, v]) => [k, v == null ? "" : String(v)])) };
 }

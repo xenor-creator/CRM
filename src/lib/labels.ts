@@ -46,6 +46,13 @@ export const invoiceStatusLabels: Record<Enums<"invoice_status">, string> = {
   storniert: "Storniert",
 };
 
+export const quoteStatusLabels: Record<Enums<"quote_status">, string> = {
+  entwurf: "Entwurf",
+  versendet: "Versendet",
+  angenommen: "Angenommen",
+  abgelehnt: "Abgelehnt",
+};
+
 export function labelOptions<T extends string>(labels: Record<T, string>) {
   return (Object.entries(labels) as [T, string][]).map(([value, label]) => ({ value, label }));
 }

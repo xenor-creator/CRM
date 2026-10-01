@@ -19,6 +19,7 @@ import type { Enums } from "@/lib/supabase/database.types";
 
 import { revokeApiKey } from "./actions";
 import { ApiKeyForm } from "./api-key-form";
+import { CompanySettingsForm } from "./company-settings-form";
 import { WebhookSecret, WebhookUrlsForm } from "./webhook-settings";
 
 export const metadata: Metadata = { title: "Einstellungen" };
@@ -33,7 +34,12 @@ export default async function SettingsPage() {
   const { supabase, email } = await requireVerifiedSession();
 
   const [{ data: settings }, { data: keys }, { data: deliveries }] = await Promise.all([
-    supabase.from("settings").select("webhook_urls, webhook_secret").single(),
+    supabase
+      .from("settings")
+      .select(
+        "webhook_urls, webhook_secret, firmenname, inhaber, strasse, plz, ort, land, email, telefon, website, ust_id, steuernummer, bank_name, iban, bic, standard_ust_satz, zahlungsziel_tage, angebot_gueltig_tage",
+      )
+      .single(),
     supabase
       .from("api_keys")
       .select("id, name, key_praefix, zuletzt_genutzt_am, widerrufen_am, created_at")
@@ -96,9 +102,11 @@ export default async function SettingsPage() {
             </div>
           </SectionCard>
 
-          <SectionCard title="Weitere Einstellungen">
-            <EmptyHint>Firmendaten, Bankverbindung, Nummernkreise und Umsatzsteuer folgen in Phase 4.</EmptyHint>
-          </SectionCard>
+          {settings && (
+            <SectionCard title="Firmendaten für Angebote und Rechnungen">
+              <CompanySettingsForm settings={settings} />
+            </SectionCard>
+          )}
         </div>
 
         <div className="grid grid-cols-1 content-start gap-6">

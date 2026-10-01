@@ -1,4 +1,4 @@
-import { AlertTriangle, Pencil, Trash2 } from "lucide-react";
+import { AlertTriangle, FilePlus2, Pencil, Trash2 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -10,7 +10,8 @@ import { ActivityTimeline, timelineSelect } from "@/components/activity-timeline
 import { DefinitionList } from "@/components/definition-list";
 import { ConfirmActionButton } from "@/components/form/confirm-action-button";
 import { PageHeader } from "@/components/page-header";
-import { SectionCard } from "@/components/section-card";
+import { QuoteStatusBadge } from "@/components/quote-status-badge";
+import { EmptyHint, SectionCard } from "@/components/section-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { requireVerifiedSession } from "@/lib/auth/session";
@@ -19,6 +20,7 @@ import { weightedValue } from "@/lib/deals";
 import { formatDate, formatDateTime, formatEuro } from "@/lib/format";
 import { contactName } from "@/lib/names";
 
+import { createQuoteForDeal } from "../../angebote/actions";
 import { changeDealStage, deleteDeal } from "../actions";
 import { StageForm } from "../stage-form";
 import { WonFollowUpForm } from "../won-follow-up";
@@ -38,7 +40,7 @@ export default async function DealPage(props: PageProps<"/deals/[id]">) {
     notFound();
   }
 
-  const [stages, activities, tasks, status, projects, retainers] = await Promise.all([
+  const [stages, activities, tasks, status, projects, retainers, quotes] = await Promise.all([
     supabase.from("deal_stages").select("id, name, position, art").order("position"),
     supabase
       .from("activities")
@@ -55,6 +57,7 @@ export default async function DealPage(props: PageProps<"/deals/[id]">) {
     supabase.from("deal_activity_status").select("letzte_aktivitaet").eq("deal_id", id).maybeSingle(),
     supabase.from("projects").select("id, titel").eq("deal_id", id),
     supabase.from("retainers").select("id, titel").eq("deal_id", id),
+    supabase.from("quotes").select("id, nummer, status, summe_netto, datum").eq("deal_id", id).order("created_at", { ascending: false }),
   ]);
   const followUps = [
     ...(projects.data ?? []).map((p) => ({ href: `/projekte/${p.id}`, label: `Projekt: ${p.titel}` })),
@@ -164,6 +167,33 @@ export default async function DealPage(props: PageProps<"/deals/[id]">) {
               )}
             </SectionCard>
           )}
+          <SectionCard title="Angebote">
+            <div className="grid gap-3">
+              {quotes.data?.length ? (
+                <ul className="grid gap-2 text-sm">
+                  {quotes.data.map((q) => (
+                    <li key={q.id} className="flex flex-wrap items-center gap-2">
+                      <Link href={`/angebote/${q.id}`} className="font-medium hover:underline">
+                        {q.nummer ?? "Entwurf"}
+                      </Link>
+                      <QuoteStatusBadge status={q.status} />
+                      <span className="text-muted-foreground w-full text-xs">
+                        {formatEuro(q.summe_netto)} netto{q.datum && <> · {formatDate(q.datum)}</>}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <EmptyHint>Noch keine Angebote.</EmptyHint>
+              )}
+              <form action={createQuoteForDeal.bind(null, id)}>
+                <Button type="submit" variant="outline" size="sm">
+                  <FilePlus2 />
+                  Angebot erstellen
+                </Button>
+              </form>
+            </div>
+          </SectionCard>
           <SectionCard title="Phase">
             <StageForm
               key={deal.stage_id}

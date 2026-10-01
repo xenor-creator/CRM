@@ -10,6 +10,11 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // PDF rendering runs in Node and reads fonts and the ICC profile from disk.
+  serverExternalPackages: ["@react-pdf/renderer"],
+  outputFileTracingIncludes: {
+    "/**": ["./src/lib/pdf/assets/**"],
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
