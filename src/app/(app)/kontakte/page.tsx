@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { Download, Plus } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -37,12 +37,20 @@ export default async function ContactsPage(props: PageProps<"/kontakte">) {
       <PageHeader
         title="Kontakte"
         actions={
-          <Button asChild>
-            <Link href="/kontakte/neu">
-              <Plus />
-              Neuer Kontakt
-            </Link>
-          </Button>
+          <>
+            <Button asChild variant="outline">
+              <a href="/kontakte/export" download>
+                <Download />
+                Export
+              </a>
+            </Button>
+            <Button asChild>
+              <Link href="/kontakte/neu">
+                <Plus />
+                Neuer Kontakt
+              </Link>
+            </Button>
+          </>
         }
       />
 

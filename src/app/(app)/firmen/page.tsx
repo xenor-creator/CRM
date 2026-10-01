@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { Download, Plus, Upload } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -67,12 +67,26 @@ export default async function CompaniesPage(props: PageProps<"/firmen">) {
         title="Firmen"
         description="Leads, Kunden und ehemalige Kunden."
         actions={
-          <Button asChild>
-            <Link href="/firmen/neu">
-              <Plus />
-              Neue Firma
-            </Link>
-          </Button>
+          <>
+            <Button asChild variant="outline">
+              <Link href="/firmen/import">
+                <Upload />
+                Import
+              </Link>
+            </Button>
+            <Button asChild variant="outline">
+              <a href="/firmen/export" download>
+                <Download />
+                Export
+              </a>
+            </Button>
+            <Button asChild>
+              <Link href="/firmen/neu">
+                <Plus />
+                Neue Firma
+              </Link>
+            </Button>
+          </>
         }
       />
 
