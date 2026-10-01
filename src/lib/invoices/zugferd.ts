@@ -98,6 +98,8 @@ function sellerParty(s: Seller): string {
       : "";
   return (
     "<ram:SellerTradeParty>" +
+    // BR-CO-26 needs a seller identifier when there is no VAT id; the tax number serves as BT-29.
+    (!s.ust_id && s.steuernummer ? text("ram:ID", s.steuernummer) : "") +
     text("ram:Name", s.firmenname) +
     contact +
     address(s) +

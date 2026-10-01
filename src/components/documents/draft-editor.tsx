@@ -100,7 +100,7 @@ export function DraftEditor({
                 value={row.einzelpreis}
                 onChange={(e) => update(row.key, { einzelpreis: e.target.value })}
                 inputMode="decimal"
-                aria-invalid={item === null}
+                aria-invalid={parsePrice(row.einzelpreis) === null}
               />
               <span className="self-center text-right text-sm tabular-nums">{item ? formatEuro(lineTotalCents(item) / 100) : "–"}</span>
               <Button

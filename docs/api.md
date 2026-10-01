@@ -123,7 +123,13 @@ Ohne Verlustgrund lehnt die API den Wechsel auf „Verloren“ mit `400` ab. Wei
 
 ### `GET /invoices?status=overdue`: überfällige Rechnungen
 
-`status` akzeptiert `entwurf`, `versendet`, `bezahlt`, `ueberfaellig` oder englisch `draft`, `sent`, `paid`, `overdue`. Jede Rechnung enthält `company` samt Kontakten, für die Zahlungserinnerung per n8n. Rechnungen entstehen ab Phase 4.
+`status` akzeptiert `entwurf`, `versendet`, `bezahlt`, `ueberfaellig`, `storniert` oder englisch `draft`, `sent`, `paid`, `overdue`, `cancelled`. Jede Rechnung enthält `company` samt Kontakten, für die Zahlungserinnerung per n8n. `zahlbetrag` ist der offene Betrag nach Abzug geleisteter Abschläge.
+
+Rechnungen werden täglich ab dem Tag nach `faellig_am` automatisch auf `ueberfaellig` gesetzt. Stornorechnungen (`art = "stornorechnung"`) werden nie überfällig.
+
+### `GET /invoices/{id}/pdf`: Rechnungs-PDF
+
+Liefert das PDF (PDF/A-3 mit eingebetteter E-Rechnung `factur-x.xml`, ZUGFeRD-Profil EN 16931) einer abgeschlossenen Rechnung als `application/pdf`. Für Entwürfe und fremde Rechnungen antwortet die API mit `404`. In n8n den HTTP-Request-Knoten auf „Response Format: File“ stellen, um das PDF z. B. an eine E-Mail anzuhängen.
 
 ## Webhooks
 
@@ -135,7 +141,12 @@ Die Ziel-URL je Ereignis trägst du unter **Einstellungen → Webhooks an n8n** 
 | `deal.stage_changed` | Phasenwechsel, enthält `previous_stage` |
 | `deal.won` / `deal.lost` | Wechsel auf „Gewonnen“ bzw. „Verloren“ (zusätzlich zu `deal.stage_changed`) |
 | `task.overdue` | Täglich, einmal je überfälliger Aufgabe |
-| `invoice.created`, `invoice.overdue`, `invoice.paid`, `retainer.ending_soon` | ab Phase 4 |
+| `invoice.created` | Rechnung abgeschlossen (Nummer vergeben, PDF erzeugt), auch Stornorechnungen |
+| `invoice.overdue` | Täglich, wenn eine versendete Rechnung die Fälligkeit überschritten hat |
+| `invoice.paid` | Rechnung als bezahlt markiert |
+| `retainer.ending_soon` | Täglich, einmal je Frist: 30 Tage vor Ablauf der Kündigungsfrist (`hinweis.kind = "kuendigungsfrist"`) und vor dem Laufzeitende (`"laufzeitende"`) |
+
+Die `invoice.*`-Ereignisse enthalten `data.invoice` (alle Rechnungsfelder inklusive `nummer`, `zahlbetrag`, `positionen`) und `data.company`. Das PDF holst du über `GET /invoices/{id}/pdf`. `retainer.ending_soon` enthält `data.hinweis` (`kind`, `date`, `days`), `data.retainer` und `data.company`.
 
 ### Anfrage
 

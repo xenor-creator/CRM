@@ -6,7 +6,21 @@ Die vollständige Spezifikation steht in `docs/pflichtenheft.md`. Lies sie vor j
 
 ## Aktueller Stand
 
-- Aktuelle Phase: **Phase 3 – n8n-Anbindung** (Code fertig, Abnahme auf echter Infrastruktur offen); Phase 1 und 2 ebenfalls noch nicht auf echtem Supabase/Vercel abgenommen
+- Aktuelle Phase: **Phase 4 – Projekte, Retainer, Rechnungen** (Code fertig, Abnahme auf echter Infrastruktur offen); Phase 1–3 ebenfalls noch nicht auf echtem Supabase/Vercel abgenommen
+- Erledigt in Phase 4:
+  - Migration `20261003090000_billing.sql`: Status `storniert`, Projekt-Timer, Retainer-Kündigung und Fristmeldungen, Rechnungsfelder (Leistungszeitraum, USt, Abschläge, Zahlbetrag, Absender-/Empfänger-Snapshot), Summen per Trigger (kaufmännisch gerundet je Position), `finalize_invoice`/`finalize_quote` (Nummer beim Abschließen, Pflichtangaben-Prüfung), `create_storno_draft`, Schutz versendeter Angebote, `invoice.created/overdue/paid` per Trigger, `mark_overdue_invoices()` (nur `service_role`), eine Rechnung je Retainer-Zeitraum, ein Storno je Rechnung
+  - Projekte: Liste, Detail mit Timer und manueller Zeiterfassung (`1:30`, `1,5 h`, `90 min`), Rentabilität (Festpreis vs. Stunden × interner Satz); beim Gewinnen eines Deals Dialog „Projekt/Retainer anlegen“
+  - Retainer: Liste mit MRR, Mindestlaufzeit, Kündigung zum frühestmöglichen Termin, Warnung 30 Tage vor Kündigungsfrist/Laufzeitende (`retainer.ending_soon`, einmal je Frist); Abrechnung monatlich im Voraus am Starttag, Cron legt fehlende Monatsentwürfe nach (idempotent)
+  - Rechnungen: aus Projekt (Festpreis, Abschlag als Betrag oder %, Schlussrechnung mit Abzug nach §14 Abs. 5 UStG) oder Retainer; Positionseditor mit Live-Summen; Abschließen erzeugt PDF/A-3 mit `factur-x.xml` (ZUGFeRD EN 16931, `src/lib/invoices/zugferd.ts`, `src/lib/pdf/`), Ablage im Bucket `dokumente`; bezahlt, überfällig (Cron), Stornorechnung (Typ 381)
+  - Angebote aus dem Deal: Positionen aus den Deal-Werten, Nummer `AN-…`, PDF/A, Status Angenommen/Abgelehnt
+  - Firmendaten in den Einstellungen (Adresse, Steuernummer/USt-IdNr., IBAN mit Prüfziffer)
+  - API: `GET /api/v1/invoices/{id}/pdf`, Status-Alias `cancelled`, mehr Rechnungsfelder; `docs/api.md` ergänzt
+  - Getestet: 169 Unit-Tests, SQL-Tests Phase 1–4 auf frisch migrierter Datenbank, E2E-Abnahme (Angebot, Abschlag 30 %, Schlussrechnung, Retainer-Monatsrechnung, bezahlt, überfällig, Storno, fortlaufende Nummern mit Kundennummer, API-PDF, Webhooks), alle PDFs mit Mustang 2.26 geprüft (PDF/A-3b + EN 16931 gültig), Regression Phase 1–3
+- Hinweise Phase 4:
+  - Ohne USt-IdNr. wird die Steuernummer zusätzlich als Verkäuferkennung (BT-29) ausgegeben, sonst verletzt die E-Rechnung BR-CO-26
+  - Schrift Inter (OFL) und sRGB-Profil liegen in `src/lib/pdf/assets/` und werden per `outputFileTracingIncludes` mit ausgeliefert
+  - Fehlt das PDF nach dem Abschließen (z. B. Storage-Fehler), wird es beim ersten Abruf erzeugt
+  - Kein KI-Feature im CRM, daher aktuell kein AVV für die Claude-API nötig
 - Erledigt in Phase 3:
   - Migration `20261002090000_api_webhooks.sql`: `settings.webhook_secret`, Outbox-Trigger für `deal.created/stage_changed/won/lost` (nur mit konfigurierter URL), `claim_webhook_events()` mit Sperre gegen Doppelversand, `next_webhook_retry()`, `enqueue_overdue_task_webhooks()` (einmal je Aufgabe, `tasks.ueberfaellig_gemeldet_am`), `find_duplicates_for_owner()` für die API; Owner-Funktionen nur für `service_role`
   - API-Keys: `crm_` + 32 Zufallsbytes, gespeichert als SHA-256, einmalige Anzeige, Nutzungszeitpunkt, Widerruf (`src/lib/api/keys.ts`, `context.ts`)
@@ -17,7 +31,6 @@ Die vollständige Spezifikation steht in `docs/pflichtenheft.md`. Lies sie vor j
   - Getestet: 109 Unit-Tests, SQL-Tests Phase 1–3, API-Test gegen lokalen Stack (Auth, Validierung, Lead-Abgleich, Mandantentrennung, Signatur, Wiederholung), Browser-Abnahme (Lead per API, Phasenwechsel im Board → signierter Webhook)
 - Hinweise Phase 3:
   - Die API umgeht RLS (Service Role); jede Abfrage muss `.eq("owner_id", ctx.ownerId)` setzen und Fremd-IDs mit `ownsRow`/`resolveLinks` prüfen
-  - `invoice.*` und `retainer.ending_soon` sind in den Einstellungen schon konfigurierbar, werden aber erst in Phase 4 ausgelöst
   - Ratenbegrenzung bewusst nicht umgesetzt (nur eigene n8n-Instanzen)
 - Erledigt in Phase 2:
   - Migration `20261001090000_sales_rules.sql`: Verlustgrund-Pflicht und `abgeschlossen_am` per Trigger, Phase muss dem Eigentümer gehören, Gewonnen setzt Firma auf „Kunde“, generierte Spalte `companies.domain`, `find_duplicates()` (E-Mail, Website-Domain, E-Mail-Domain ohne Freemailer), View `deal_activity_status` (security invoker), ein Hauptkontakt je Firma, Einwilligungsdatum automatisch
@@ -27,7 +40,6 @@ Die vollständige Spezifikation steht in `docs/pflichtenheft.md`. Lies sie vor j
   - Deal-Kanban mit `@dnd-kit/core` (Maus, Touch, Tastatur), Summen je Spalte, Verlustgrund-Dialog, Gewonnen/Verloren zeigen die letzten 90 Tage; Deal-Seite mit Phasenwechsel, gewichtetem Wert, Aufgaben und Aktivitäten
   - CSV: eigener Parser/Writer (`src/lib/csv.ts`), Firmen-Import mit Vorschau und Dublettenprüfung, Export von Firmen und Kontakten (Semikolon, UTF-8 mit BOM, Schutz gegen Formel-Injection)
   - Getestet: 84 Unit-Tests, SQL-Tests Phase 1 + 2, Browser-Tests (Playwright) gegen lokales Postgres + PostgREST mit Auth-Mock, inklusive der Abnahme „Lead anlegen, durch alle Phasen ziehen, gewonnen/verloren“
-- Bewusst nach Phase 4 verschoben: Dialog „Projekt/Retainer anlegen“ beim Gewinnen (Projekte und Retainer entstehen erst dort)
 - Erledigt in Phase 1:
   - Next.js-16-Projekt mit TypeScript strict, Tailwind v4, shadcn/ui-Basis (Button, Input, Label, Card), Vitest
   - Migration `20260930120000_initial_schema.sql`: alle Tabellen aus dem Pflichtenheft plus `settings`, `deal_stages`, `number_counters`, `api_keys`; RLS überall mit `owner_id = auth.uid()` und Pflicht auf `aal2`; Storage-Bucket `dokumente`; Kundennummer per Trigger; Schutz versendeter Rechnungen per Trigger; Standardphasen je Nutzer
@@ -44,9 +56,11 @@ Die vollständige Spezifikation steht in `docs/pflichtenheft.md`. Lies sie vor j
   - `tasks` dürfen ohne Verknüpfung existieren (Schnellerfassung); `activities` und `files` brauchen mindestens eine Verknüpfung
   - Werte für `tasks.prioritaet` (niedrig, mittel, hoch) sind nicht im Pflichtenheft festgelegt
   - Ein Browser-Client wurde bisher nicht gebraucht, alle Mutationen laufen über Server Actions
+  - `invoices.status` zusätzlich `storniert` (Original nach abgeschlossener Stornorechnung); Abschlagsrechnungen werden in der Schlussrechnung mit Nummer, Datum und Beträgen abgezogen
+  - Retainer werden monatlich im Voraus am Starttag abgerechnet und verlängern sich nach der Mindestlaufzeit monatlich
   - Die Dublettenprüfung per Domain ignoriert Freemail-Domains (gmail.com, web.de usw.)
   - Aktivitäten erhalten immer die Firma des verknüpften Deals/Kontakts, damit sie in der Firmen-Zeitleiste erscheinen; für die 14-Tage-Warnung zählen Aktivitäten am Deal und Firmen-Aktivitäten ohne Deal
-- Nächster Schritt: Phase 4 – Projekte, Retainer, Rechnungen (inkl. ZUGFeRD); vorher AVV-Frage zur Claude-API klären (siehe Pflichtenheft)
+- Nächster Schritt: Phase 5 – Dashboard und Feinschliff
 
 Aktualisiere diesen Abschnitt am Ende jeder Phase.
 
@@ -55,7 +69,7 @@ Aktualisiere diesen Abschnitt am Ende jeder Phase.
 - Next.js (App Router, aktuelle stabile Version), TypeScript im strict mode
 - Tailwind CSS + shadcn/ui
 - Supabase: Postgres (Region Frankfurt), Auth, Storage, Client über `@supabase/ssr`
-- PDF-Erzeugung: `@react-pdf/renderer`; E-Rechnung im ZUGFeRD-Format (Profil EN 16931) ab Phase 4
+- PDF-Erzeugung: `@react-pdf/renderer`, PDF/A-3 und XML-Einbettung mit `pdf-lib`; E-Rechnung im ZUGFeRD-Format (Profil EN 16931)
 - Hosting: Vercel, Funktionsregion `fra1`, Cron über Vercel Cron
 - Paketmanager: pnpm
 - Validierung: zod (Formulare, API-Eingaben, Umgebungsvariablen)

@@ -166,6 +166,7 @@ const invoiceStatusAliases: Record<string, (typeof enums.invoice_status)[number]
   sent: "versendet",
   paid: "bezahlt",
   overdue: "ueberfaellig",
+  cancelled: "storniert",
 };
 
 export const apiInvoiceQuery = z.strictObject({

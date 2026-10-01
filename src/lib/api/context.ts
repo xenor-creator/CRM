@@ -60,7 +60,7 @@ export function withApiKey<A extends unknown[]>(handler: Handler<A>) {
 // True if the row exists and belongs to the API key's owner (guards foreign keys in requests).
 export async function ownsRow(
   ctx: ApiContext,
-  table: "companies" | "contacts" | "deals" | "projects",
+  table: "companies" | "contacts" | "deals" | "projects" | "invoices",
   id: string,
 ): Promise<boolean> {
   const { data } = await ctx.db.from(table).select("id").eq("id", id).eq("owner_id", ctx.ownerId).maybeSingle();

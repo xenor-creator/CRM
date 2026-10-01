@@ -15,4 +15,4 @@ export const TASK_COLUMNS =
   "id, titel, faellig_am, erledigt, prioritaet, company_id, deal_id, project_id, created_at, updated_at" as const;
 
 export const INVOICE_COLUMNS =
-  "id, nummer, art, datum, faellig_am, summe_netto, ust_satz, summe_brutto, status, project_id, retainer_id, created_at, updated_at, company:companies(id, name, kundennummer, contacts(vorname, nachname, email, ist_hauptkontakt))" as const;
+  "id, nummer, art, datum, faellig_am, leistung_von, leistung_bis, summe_netto, ust_satz, summe_ust, summe_brutto, zahlbetrag, status, bezahlt_am, storno_von_id, project_id, retainer_id, created_at, updated_at, company:companies(id, name, kundennummer, contacts(vorname, nachname, email, ist_hauptkontakt))" as const;

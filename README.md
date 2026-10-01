@@ -37,6 +37,15 @@ pnpm dev
 
 API-Key und Webhook-Ziele richtest du unter **Einstellungen** ein. Alle Endpunkte, das Webhook-Format und ein fertiges Snippet zur Signaturprüfung stehen in [`docs/api.md`](docs/api.md).
 
+### 5. Rechnungen und E-Rechnung
+
+Vor dem ersten Angebot bzw. der ersten Rechnung unter **Einstellungen → Firmendaten** Name, Adresse, Steuernummer oder USt-IdNr., IBAN und Zahlungsziel eintragen. Ohne diese Angaben lässt sich nichts abschließen.
+
+- Rechnungen entstehen aus Projekten (Festpreis, Abschlag, Schlussrechnung mit Abzug der Abschläge) und als Monatsentwurf aus Retainern (täglicher Cron am Abrechnungstag, im Voraus).
+- „Abschließen“ vergibt die Nummer (`RE-JJJJ-NNNN-Kxxxx`) in der Datenbank, friert Absender- und Empfängerdaten ein und erzeugt ein PDF/A-3 mit eingebetteter E-Rechnung (ZUGFeRD, Profil EN 16931). PDF und XML liegen im Storage-Bucket `dokumente`.
+- Korrekturen nur über „Stornorechnung erstellen“.
+- Prüfen lässt sich eine Rechnung z. B. mit dem [Mustang-Validator](https://www.mustangproject.org/commandline/): `java -jar Mustang-CLI.jar --action validate --source RE-….pdf`.
+
 ## Befehle
 
 ```bash
@@ -53,7 +62,12 @@ supabase gen types typescript --linked > src/lib/supabase/database.types.ts
 
 - Die Proxy-Schicht (`src/proxy.ts`) leitet ohne Sitzung auf `/login` um und ohne bestandene 2FA auf `/2fa`. Das geschützte Layout prüft beides zusätzlich serverseitig.
 - In der Datenbank greifen alle Policies nur mit `owner_id = auth.uid()` **und** einer 2FA-bestätigten Sitzung (`aal2`). Ein gestohlenes Passwort allein öffnet also keine Tabelle.
-- Versendete Rechnungen sind per Trigger unveränderlich. Es ist nur noch der Statuswechsel auf Bezahlt oder Überfällig möglich, Korrekturen laufen über eine Stornorechnung.
+- Versendete Rechnungen sind per Trigger unveränderlich. Es sind nur noch die Statuswechsel auf Bezahlt, Überfällig oder Storniert möglich, Korrekturen laufen über eine Stornorechnung.
 - Kundennummern (`K1001` ff.) vergibt die Datenbank über eine gesperrte Zählertabelle.
 - Die REST-API (`/api/v1`) prüft API-Keys per SHA-256-Hash und arbeitet mit dem Service-Role-Key (nur in `src/lib/supabase/service.ts`). Jede Abfrage ist fest auf den Eigentümer des Keys begrenzt, auch verknüpfte IDs in Anfragen werden geprüft.
 - Webhooks entstehen per Datenbank-Trigger in derselben Transaktion wie die Änderung (Outbox) und werden mit HMAC-SHA256 signiert.
+
+## Drittanbieter-Dateien
+
+- Schrift **Inter** (`src/lib/pdf/assets/Inter-*.ttf`) unter der SIL Open Font License 1.1, siehe `src/lib/pdf/assets/Inter-OFL.txt`.
+- Farbprofil **sRGB** (`src/lib/pdf/assets/sRGB.icc`) des International Color Consortium, frei verwendbar; nötig für PDF/A.

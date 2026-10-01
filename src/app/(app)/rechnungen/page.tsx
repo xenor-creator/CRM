@@ -24,8 +24,8 @@ export default async function InvoicesPage(props: PageProps<"/rechnungen">) {
   let query = supabase
     .from("invoices")
     .select("id, nummer, art, status, datum, faellig_am, summe_brutto, zahlbetrag, leistung_von, companies(id, name)")
-    .order("status")
     .order("datum", { ascending: false, nullsFirst: true })
+    .order("nummer", { ascending: false })
     .limit(500);
   if (isStatus(status)) query = query.eq("status", status);
   const { data: invoices, error } = await query;
@@ -75,7 +75,7 @@ export default async function InvoicesPage(props: PageProps<"/rechnungen">) {
                 </TableCell>
                 <TableCell>{i.companies?.name ?? "–"}</TableCell>
                 <TableCell className="hidden md:table-cell">{i.datum ? formatDate(i.datum) : "–"}</TableCell>
-                <TableCell className="hidden md:table-cell">{i.faellig_am ? formatDate(i.faellig_am) : "–"}</TableCell>
+                <TableCell className="hidden md:table-cell">{i.faellig_am && i.art !== "stornorechnung" ? formatDate(i.faellig_am) : "–"}</TableCell>
                 <TableCell className="text-right tabular-nums">{formatEuro(i.zahlbetrag)}</TableCell>
                 <TableCell>
                   <InvoiceStatusBadge status={i.status} />

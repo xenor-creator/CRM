@@ -50,6 +50,13 @@ describe("buildZugferdXml", () => {
     expect(xml).not.toContain("BillingSpecifiedPeriod");
   });
 
+  it("uses the tax number as seller identifier only without VAT id (BR-CO-26)", () => {
+    const seller = (ust_id: string | null) =>
+      buildZugferdXml({ ...base, absender: { ...base.absender, ust_id } }).match(/<ram:SellerTradeParty>(<ram:ID>[^<]*<\/ram:ID>)?/)?.[1];
+    expect(seller(null)).toBe(`<ram:ID>${base.absender.steuernummer}</ram:ID>`);
+    expect(seller("DE123456789")).toBeUndefined();
+  });
+
   it("uses a billing period for retainer invoices", () => {
     const xml = buildZugferdXml({ ...base, leistung_von: "2026-10-01", leistung_bis: "2026-10-31" });
     expect(xml).toContain("<ram:BillingSpecifiedPeriod>");
