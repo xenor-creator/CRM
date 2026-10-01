@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { firstParam, ilikeAny, sanitizeSearchTerm } from "./search";
+import { escapeLike, firstParam, ilikeAny, sanitizeSearchTerm } from "./search";
 
 describe("sanitizeSearchTerm", () => {
   it("strips filter syntax characters", () => {
@@ -25,5 +25,12 @@ describe("firstParam", () => {
     expect(firstParam(["a", "b"])).toBe("a");
     expect(firstParam("a")).toBe("a");
     expect(firstParam(undefined)).toBeUndefined();
+  });
+});
+
+describe("escapeLike", () => {
+  it("escapes ilike wildcards", () => {
+    expect(escapeLike("100%_neu")).toBe("100\\%\\_neu");
+    expect(escapeLike("Verloren")).toBe("Verloren");
   });
 });

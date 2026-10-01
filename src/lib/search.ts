@@ -11,3 +11,8 @@ export function ilikeAny(columns: readonly string[], term: string): string {
 export function firstParam(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value;
 }
+
+// Case-insensitive exact match with ilike: escapes the wildcards % and _.
+export function escapeLike(value: string): string {
+  return value.replace(/[\\%_]/g, "\\$&");
+}
