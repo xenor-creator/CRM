@@ -9,6 +9,7 @@ import { TaskList } from "@/components/activities/task-list";
 import { ActivityTimeline, timelineSelect } from "@/components/activity-timeline";
 import { DefinitionList } from "@/components/definition-list";
 import { ConfirmActionButton } from "@/components/form/confirm-action-button";
+import { FileSection } from "@/components/files/file-section";
 import { PageHeader } from "@/components/page-header";
 import { QuoteStatusBadge } from "@/components/quote-status-badge";
 import { EmptyHint, SectionCard } from "@/components/section-card";
@@ -208,6 +209,7 @@ export default async function DealPage(props: PageProps<"/deals/[id]">) {
               <TaskForm links={{ deal_id: id }} />
             </div>
           </SectionCard>
+          <FileSection supabase={supabase} link={{ kind: "deal", id }} />
         </div>
       </div>
     </>

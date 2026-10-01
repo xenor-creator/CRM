@@ -108,6 +108,10 @@ grant execute on function public.purge_old_webhook_events(timestamptz) to servic
 -- (cascades cannot reach Supabase Storage).
 -- ---------------------------------------------------------------------------
 
+-- Uploads go straight from the browser to Storage (signed upload URL, because Vercel functions
+-- accept at most 4.5 MB), so the bucket enforces the 10 MB limit itself.
+update storage.buckets set file_size_limit = 10485760 where id = 'dokumente';
+
 alter table public.files
   add column groesse bigint check (groesse between 0 and 10485760),
   add constraint files_pfad_unique unique (pfad);

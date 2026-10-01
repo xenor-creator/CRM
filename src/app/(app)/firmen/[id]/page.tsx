@@ -10,6 +10,7 @@ import { ActivityTimeline, timelineSelect } from "@/components/activity-timeline
 import { CompanyStatusBadge } from "@/components/company-status-badge";
 import { DefinitionList } from "@/components/definition-list";
 import { ConfirmActionButton } from "@/components/form/confirm-action-button";
+import { FileSection } from "@/components/files/file-section";
 import { PageHeader } from "@/components/page-header";
 import { EmptyHint, SectionCard } from "@/components/section-card";
 import { Badge } from "@/components/ui/badge";
@@ -277,6 +278,7 @@ export default async function CompanyPage(props: PageProps<"/firmen/[id]">) {
               <TaskForm links={{ company_id: id }} />
             </div>
           </SectionCard>
+          <FileSection supabase={supabase} link={{ kind: "company", id }} />
           <SectionCard title="Aktivitäten">
             <div className="grid gap-6">
               <ActivityForm

@@ -7,6 +7,7 @@ import { TaskForm } from "@/components/activities/task-form";
 import { TaskList } from "@/components/activities/task-list";
 import { DefinitionList } from "@/components/definition-list";
 import { ConfirmActionButton } from "@/components/form/confirm-action-button";
+import { FileSection } from "@/components/files/file-section";
 import { PageHeader } from "@/components/page-header";
 import { EmptyHint, SectionCard } from "@/components/section-card";
 import { Badge } from "@/components/ui/badge";
@@ -196,6 +197,7 @@ export default async function ProjectPage(props: PageProps<"/projekte/[id]">) {
               <TaskForm links={{ project_id: id }} />
             </div>
           </SectionCard>
+          <FileSection supabase={supabase} link={{ kind: "project", id }} />
         </div>
       </div>
     </>
