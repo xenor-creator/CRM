@@ -6,8 +6,17 @@ Die vollständige Spezifikation steht in `docs/pflichtenheft.md`. Lies sie vor j
 
 ## Aktueller Stand
 
-- Aktuelle Phase: **Phase 1 – Fundament** (Code fertig, Abnahme offen)
-- Erledigt:
+- Aktuelle Phase: **Phase 2 – Vertrieb** (Code fertig, Abnahme auf echtem Supabase offen); Phase 1 ebenfalls noch nicht auf echter Infrastruktur abgenommen
+- Erledigt in Phase 2:
+  - Migration `20261001090000_sales_rules.sql`: Verlustgrund-Pflicht und `abgeschlossen_am` per Trigger, Phase muss dem Eigentümer gehören, Gewonnen setzt Firma auf „Kunde“, generierte Spalte `companies.domain`, `find_duplicates()` (E-Mail, Website-Domain, E-Mail-Domain ohne Freemailer), View `deal_activity_status` (security invoker), ein Hauptkontakt je Firma, Einwilligungsdatum automatisch
+  - Firmen: Liste mit Suche, Filter (Status, Branche), Sortierung; Anlegen mit optionalem Hauptkontakt und Dublettenwarnung; Detailseite mit Kontakten, Deals, Projekten, Retainern, Rechnungen, Aufgaben und Aktivitätenleiste; Bearbeiten, Löschen
+  - Kontakte: Liste, Anlegen/Bearbeiten/Löschen, Dublettenprüfung per E-Mail
+  - Aktivitäten und Aufgaben auf den Detailseiten, Schnellerfassung mit Strg/⌘ + K, Ansicht „Heute“ (fällige/überfällige Aufgaben, Deals ohne Aktivität seit 14 Tagen)
+  - Deal-Kanban mit `@dnd-kit/core` (Maus, Touch, Tastatur), Summen je Spalte, Verlustgrund-Dialog, Gewonnen/Verloren zeigen die letzten 90 Tage; Deal-Seite mit Phasenwechsel, gewichtetem Wert, Aufgaben und Aktivitäten
+  - CSV: eigener Parser/Writer (`src/lib/csv.ts`), Firmen-Import mit Vorschau und Dublettenprüfung, Export von Firmen und Kontakten (Semikolon, UTF-8 mit BOM, Schutz gegen Formel-Injection)
+  - Getestet: 84 Unit-Tests, SQL-Tests Phase 1 + 2, Browser-Tests (Playwright) gegen lokales Postgres + PostgREST mit Auth-Mock, inklusive der Abnahme „Lead anlegen, durch alle Phasen ziehen, gewonnen/verloren“
+- Bewusst nach Phase 4 verschoben: Dialog „Projekt/Retainer anlegen“ beim Gewinnen (Projekte und Retainer entstehen erst dort)
+- Erledigt in Phase 1:
   - Next.js-16-Projekt mit TypeScript strict, Tailwind v4, shadcn/ui-Basis (Button, Input, Label, Card), Vitest
   - Migration `20260930120000_initial_schema.sql`: alle Tabellen aus dem Pflichtenheft plus `settings`, `deal_stages`, `number_counters`, `api_keys`; RLS überall mit `owner_id = auth.uid()` und Pflicht auf `aal2`; Storage-Bucket `dokumente`; Kundennummer per Trigger; Schutz versendeter Rechnungen per Trigger; Standardphasen je Nutzer
   - SQL-Tests in `supabase/sql-tests/` (`pnpm test:db`)
@@ -22,8 +31,10 @@ Die vollständige Spezifikation steht in `docs/pflichtenheft.md`. Lies sie vor j
   - `invoices.nummer` und `quotes.nummer` bleiben bis zur Vergabe leer; die Vergabe erfolgt in Phase 4 beim Versenden, damit keine Lücken durch gelöschte Entwürfe entstehen
   - `tasks` dürfen ohne Verknüpfung existieren (Schnellerfassung); `activities` und `files` brauchen mindestens eine Verknüpfung
   - Werte für `tasks.prioritaet` (niedrig, mittel, hoch) sind nicht im Pflichtenheft festgelegt
-  - `service.ts` und der Browser-Client folgen erst, wenn sie gebraucht werden (Phase 2 bzw. 3)
-- Nächster Schritt: Phase 2 – Vertrieb
+  - `service.ts` folgt in Phase 3 (API); ein Browser-Client wurde bisher nicht gebraucht, alle Mutationen laufen über Server Actions
+  - Die Dublettenprüfung per Domain ignoriert Freemail-Domains (gmail.com, web.de usw.)
+  - Aktivitäten erhalten immer die Firma des verknüpften Deals/Kontakts, damit sie in der Firmen-Zeitleiste erscheinen; für die 14-Tage-Warnung zählen Aktivitäten am Deal und Firmen-Aktivitäten ohne Deal
+- Nächster Schritt: Phase 3 – n8n-Anbindung (API-Keys, REST-Endpunkte, Webhooks)
 
 Aktualisiere diesen Abschnitt am Ende jeder Phase.
 
