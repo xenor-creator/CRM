@@ -43,6 +43,7 @@ export const invoiceStatusLabels: Record<Enums<"invoice_status">, string> = {
   versendet: "Versendet",
   bezahlt: "Bezahlt",
   ueberfaellig: "Überfällig",
+  storniert: "Storniert",
 };
 
 export function labelOptions<T extends string>(labels: Record<T, string>) {

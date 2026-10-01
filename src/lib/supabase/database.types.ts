@@ -419,12 +419,20 @@ export type Database = {
       }
       invoices: {
         Row: {
+          abschlaege: Json
+          absender: Json | null
           art: Database["public"]["Enums"]["invoice_art"]
+          bereits_gezahlt: number
+          bezahlt_am: string | null
           company_id: string | null
           created_at: string
           datum: string | null
+          empfaenger: Json | null
           faellig_am: string | null
+          hinweis: string | null
           id: string
+          leistung_bis: string | null
+          leistung_von: string | null
           nummer: string | null
           owner_id: string
           pdf_pfad: string | null
@@ -435,17 +443,28 @@ export type Database = {
           storno_von_id: string | null
           summe_brutto: number
           summe_netto: number
+          summe_ust: number
           updated_at: string
           ust_satz: number
+          versendet_am: string | null
           xml_pfad: string | null
+          zahlbetrag: number
         }
         Insert: {
+          abschlaege?: Json
+          absender?: Json | null
           art?: Database["public"]["Enums"]["invoice_art"]
+          bereits_gezahlt?: number
+          bezahlt_am?: string | null
           company_id?: string | null
           created_at?: string
           datum?: string | null
+          empfaenger?: Json | null
           faellig_am?: string | null
+          hinweis?: string | null
           id?: string
+          leistung_bis?: string | null
+          leistung_von?: string | null
           nummer?: string | null
           owner_id?: string
           pdf_pfad?: string | null
@@ -456,17 +475,28 @@ export type Database = {
           storno_von_id?: string | null
           summe_brutto?: number
           summe_netto?: number
+          summe_ust?: number
           updated_at?: string
           ust_satz?: number
+          versendet_am?: string | null
           xml_pfad?: string | null
+          zahlbetrag?: number
         }
         Update: {
+          abschlaege?: Json
+          absender?: Json | null
           art?: Database["public"]["Enums"]["invoice_art"]
+          bereits_gezahlt?: number
+          bezahlt_am?: string | null
           company_id?: string | null
           created_at?: string
           datum?: string | null
+          empfaenger?: Json | null
           faellig_am?: string | null
+          hinweis?: string | null
           id?: string
+          leistung_bis?: string | null
+          leistung_von?: string | null
           nummer?: string | null
           owner_id?: string
           pdf_pfad?: string | null
@@ -477,9 +507,12 @@ export type Database = {
           storno_von_id?: string | null
           summe_brutto?: number
           summe_netto?: number
+          summe_ust?: number
           updated_at?: string
           ust_satz?: number
+          versendet_am?: string | null
           xml_pfad?: string | null
+          zahlbetrag?: number
         }
         Relationships: [
           {
@@ -554,6 +587,7 @@ export type Database = {
           owner_id: string
           start: string | null
           status: Database["public"]["Enums"]["project_status"]
+          timer_gestartet_am: string | null
           titel: string
           updated_at: string
         }
@@ -568,6 +602,7 @@ export type Database = {
           owner_id?: string
           start?: string | null
           status?: Database["public"]["Enums"]["project_status"]
+          timer_gestartet_am?: string | null
           titel: string
           updated_at?: string
         }
@@ -582,6 +617,7 @@ export type Database = {
           owner_id?: string
           start?: string | null
           status?: Database["public"]["Enums"]["project_status"]
+          timer_gestartet_am?: string | null
           titel?: string
           updated_at?: string
         }
@@ -604,43 +640,64 @@ export type Database = {
       }
       quotes: {
         Row: {
+          absender: Json | null
           created_at: string
+          datum: string | null
           deal_id: string
+          empfaenger: Json | null
           gueltig_bis: string | null
+          hinweis: string | null
           id: string
           nummer: string | null
           owner_id: string
           pdf_pfad: string | null
           positionen: Json
           status: Database["public"]["Enums"]["quote_status"]
+          summe_brutto: number
           summe_netto: number
+          summe_ust: number
           updated_at: string
+          ust_satz: number
         }
         Insert: {
+          absender?: Json | null
           created_at?: string
+          datum?: string | null
           deal_id: string
+          empfaenger?: Json | null
           gueltig_bis?: string | null
+          hinweis?: string | null
           id?: string
           nummer?: string | null
           owner_id?: string
           pdf_pfad?: string | null
           positionen?: Json
           status?: Database["public"]["Enums"]["quote_status"]
+          summe_brutto?: number
           summe_netto?: number
+          summe_ust?: number
           updated_at?: string
+          ust_satz?: number
         }
         Update: {
+          absender?: Json | null
           created_at?: string
+          datum?: string | null
           deal_id?: string
+          empfaenger?: Json | null
           gueltig_bis?: string | null
+          hinweis?: string | null
           id?: string
           nummer?: string | null
           owner_id?: string
           pdf_pfad?: string | null
           positionen?: Json
           status?: Database["public"]["Enums"]["quote_status"]
+          summe_brutto?: number
           summe_netto?: number
+          summe_ust?: number
           updated_at?: string
+          ust_satz?: number
         }
         Relationships: [
           {
@@ -657,9 +714,12 @@ export type Database = {
           company_id: string
           created_at: string
           deal_id: string | null
+          gekuendigt_zum: string | null
           id: string
+          kuendigungsfrist_gemeldet: string | null
           kuendigungsfrist_tage: number
           laufzeit_monate: number | null
+          laufzeitende_gemeldet: string | null
           leistungsumfang: string | null
           monatsbetrag: number
           naechste_abrechnung: string | null
@@ -673,9 +733,12 @@ export type Database = {
           company_id: string
           created_at?: string
           deal_id?: string | null
+          gekuendigt_zum?: string | null
           id?: string
+          kuendigungsfrist_gemeldet?: string | null
           kuendigungsfrist_tage?: number
           laufzeit_monate?: number | null
+          laufzeitende_gemeldet?: string | null
           leistungsumfang?: string | null
           monatsbetrag: number
           naechste_abrechnung?: string | null
@@ -689,9 +752,12 @@ export type Database = {
           company_id?: string
           created_at?: string
           deal_id?: string | null
+          gekuendigt_zum?: string | null
           id?: string
+          kuendigungsfrist_gemeldet?: string | null
           kuendigungsfrist_tage?: number
           laufzeit_monate?: number | null
+          laufzeitende_gemeldet?: string | null
           leistungsumfang?: string | null
           monatsbetrag?: number
           naechste_abrechnung?: string | null
@@ -720,6 +786,7 @@ export type Database = {
       }
       settings: {
         Row: {
+          angebot_gueltig_tage: number
           angebot_praefix: string
           bank_name: string | null
           bic: string | null
@@ -746,6 +813,7 @@ export type Database = {
           zahlungsziel_tage: number
         }
         Insert: {
+          angebot_gueltig_tage?: number
           angebot_praefix?: string
           bank_name?: string | null
           bic?: string | null
@@ -772,6 +840,7 @@ export type Database = {
           zahlungsziel_tage?: number
         }
         Update: {
+          angebot_gueltig_tage?: number
           angebot_praefix?: string
           bank_name?: string | null
           bic?: string | null
@@ -970,6 +1039,12 @@ export type Database = {
       }
     }
     Functions: {
+      buyer_snapshot: {
+        Args: {
+          p_company: string
+        }
+        Returns: Json
+      }
       claim_webhook_events: {
         Args: {
           p_owner?: string
@@ -982,6 +1057,12 @@ export type Database = {
           p_owner: string
         }
         Returns: undefined
+      }
+      create_storno_draft: {
+        Args: {
+          p_invoice: string
+        }
+        Returns: Database["public"]["Tables"]["invoices"]["Row"]
       }
       deal_webhook_data: {
         Args: {
@@ -1002,6 +1083,20 @@ export type Database = {
           p_data: Json
         }
         Returns: undefined
+      }
+      finalize_invoice: {
+        Args: {
+          p_invoice: string
+          p_datum?: string
+        }
+        Returns: Database["public"]["Tables"]["invoices"]["Row"]
+      }
+      finalize_quote: {
+        Args: {
+          p_quote: string
+          p_datum?: string
+        }
+        Returns: Database["public"]["Tables"]["quotes"]["Row"]
       }
       find_duplicates: {
         Args: {
@@ -1040,6 +1135,18 @@ export type Database = {
         }
         Returns: boolean
       }
+      line_items_net: {
+        Args: {
+          p_items: Json
+        }
+        Returns: number
+      }
+      mark_overdue_invoices: {
+        Args: {
+          p_today: string
+        }
+        Returns: number
+      }
       next_number: {
         Args: {
           p_owner: string
@@ -1060,6 +1167,18 @@ export type Database = {
         }
         Returns: string
       }
+      seller_snapshot: {
+        Args: {
+          p_owner: string
+        }
+        Returns: Json
+      }
+      validated_line_items: {
+        Args: {
+          p_items: Json
+        }
+        Returns: Json
+      }
     }
     Enums: {
       activity_typ: "anruf" | "mail" | "meeting" | "notiz"
@@ -1067,7 +1186,7 @@ export type Database = {
       company_status: "lead" | "kunde" | "ehemalig"
       deal_stage_art: "offen" | "gewonnen" | "verloren"
       invoice_art: "rechnung" | "abschlagsrechnung" | "schlussrechnung" | "stornorechnung"
-      invoice_status: "entwurf" | "versendet" | "bezahlt" | "ueberfaellig"
+      invoice_status: "entwurf" | "versendet" | "bezahlt" | "ueberfaellig" | "storniert"
       project_status: "geplant" | "in_arbeit" | "abnahme" | "abgeschlossen"
       quote_status: "entwurf" | "versendet" | "angenommen" | "abgelehnt"
       retainer_status: "aktiv" | "gekuendigt" | "beendet"
@@ -1188,7 +1307,7 @@ export const Constants = {
       company_status: ["lead", "kunde", "ehemalig"],
       deal_stage_art: ["offen", "gewonnen", "verloren"],
       invoice_art: ["rechnung", "abschlagsrechnung", "schlussrechnung", "stornorechnung"],
-      invoice_status: ["entwurf", "versendet", "bezahlt", "ueberfaellig"],
+      invoice_status: ["entwurf", "versendet", "bezahlt", "ueberfaellig", "storniert"],
       project_status: ["geplant", "in_arbeit", "abnahme", "abgeschlossen"],
       quote_status: ["entwurf", "versendet", "angenommen", "abgelehnt"],
       retainer_status: ["aktiv", "gekuendigt", "beendet"],
