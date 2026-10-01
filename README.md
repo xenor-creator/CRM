@@ -46,6 +46,10 @@ Vor dem ersten Angebot bzw. der ersten Rechnung unter **Einstellungen → Firmen
 - Korrekturen nur über „Stornorechnung erstellen“.
 - Prüfen lässt sich eine Rechnung z. B. mit dem [Mustang-Validator](https://www.mustangproject.org/commandline/): `java -jar Mustang-CLI.jar --action validate --source RE-….pdf`.
 
+### 6. Datenschutz und Backup
+
+Die Checkliste aus dem Pflichtenheft mit Stand und den manuellen Schritten (AVV, Supabase-Plan mit Backups, n8n-Backup-Workflow) steht in [`docs/datenschutz.md`](docs/datenschutz.md). Einen Entwurf des Verarbeitungsverzeichnisses findest du in [`docs/verarbeitungsverzeichnis.md`](docs/verarbeitungsverzeichnis.md).
+
 ## Befehle
 
 ```bash

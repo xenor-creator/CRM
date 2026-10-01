@@ -6,7 +6,19 @@ Die vollständige Spezifikation steht in `docs/pflichtenheft.md`. Lies sie vor j
 
 ## Aktueller Stand
 
-- Aktuelle Phase: **Phase 4 – Projekte, Retainer, Rechnungen** (Code fertig, Abnahme auf echter Infrastruktur offen); Phase 1–3 ebenfalls noch nicht auf echtem Supabase/Vercel abgenommen
+- Aktuelle Phase: **Phase 5 – Dashboard und Feinschliff** (Code fertig); alle fünf Phasen noch nicht auf echtem Supabase/Vercel abgenommen, offene manuelle Punkte in `docs/datenschutz.md`
+- Erledigt in Phase 5:
+  - Migration `20261004090000_privacy_files.sql`: versendete Angebote bleiben beim Löschen von Deal/Firma erhalten (`deal_id` → null, nicht löschbar), Entwürfe werden mitgelöscht; Webhook-Protokoll wird beim Löschen von Kontakt/Firma bereinigt, `purge_old_webhook_events()` (30 Tage, nur `service_role`); `files.groesse` (max. 10 MB, auch als Bucket-Limit), Pfad muss mit der Owner-ID beginnen, `company_id` aus Deal/Projekt; Warteschlange `storage_deletions` für Speicherobjekte gelöschter Dateien
+  - Dashboard: Pipeline gesamt/gewichtet (einmalig und monatlich getrennt), MRR, offene/überfällige Rechnungen, Umsatz Monat/Jahr (netto nach Rechnungsdatum, Schlussrechnung abzüglich Abschläge, Storno verrechnet; `src/lib/dashboard.ts`), Aufgaben heute, Projekte mit Deadline in 7 Tagen, Deals ohne Aktivität
+  - Dateien an Firma, Deal, Projekt: Upload direkt vom Browser per signierter Upload-URL (Vercel-Limit 4,5 MB je Anfrage), Server prüft Typ/Größe danach; PDF, Bilder, Office bis 10 MB; Download mit UTF-8-Dateinamen
+  - DSGVO: Löschdialog zeigt, was gelöscht wird und was bleibt; Speicherobjekte werden sofort entfernt (Cron als Rückfall); Datenauskunft je Kontakt als JSON
+  - Backup: `GET /api/v1/export` (alle Tabellen ohne Geheimnisse), `GET /api/v1/files/{id}`, n8n-Workflow in `docs/api.md`
+  - Mobil: Touch-Ziele mindestens 44 px bei `pointer: coarse` (CSS auf `data-slot`, `components/ui` unverändert), Audit aller Seiten bei 390 px ohne Überlauf
+  - Doku: `docs/datenschutz.md` (Checkliste mit Stand), `docs/verarbeitungsverzeichnis.md` (Entwurf)
+  - Getestet: 182 Unit-Tests, SQL-Tests Phase 1–5 auf frisch migrierter Datenbank, E2E Dashboard, Dateien, Datenschutz (Auskunft, Löschen inkl. Storage, Aufbewahrung, Backup ohne Fremddaten/Geheimnisse), Regression aller Phasen
+- Hinweise Phase 5:
+  - Neue Löschpfade müssen `removeDeletedFiles()` aufrufen; Dateizeilen werden per Trigger in `storage_deletions` vorgemerkt
+  - Ganzseiten-Screenshots in Playwright verändern die Mobil-Emulation; Messungen vorher durchführen
 - Erledigt in Phase 4:
   - Migration `20261003090000_billing.sql`: Status `storniert`, Projekt-Timer, Retainer-Kündigung und Fristmeldungen, Rechnungsfelder (Leistungszeitraum, USt, Abschläge, Zahlbetrag, Absender-/Empfänger-Snapshot), Summen per Trigger (kaufmännisch gerundet je Position), `finalize_invoice`/`finalize_quote` (Nummer beim Abschließen, Pflichtangaben-Prüfung), `create_storno_draft`, Schutz versendeter Angebote, `invoice.created/overdue/paid` per Trigger, `mark_overdue_invoices()` (nur `service_role`), eine Rechnung je Retainer-Zeitraum, ein Storno je Rechnung
   - Projekte: Liste, Detail mit Timer und manueller Zeiterfassung (`1:30`, `1,5 h`, `90 min`), Rentabilität (Festpreis vs. Stunden × interner Satz); beim Gewinnen eines Deals Dialog „Projekt/Retainer anlegen“
@@ -57,10 +69,11 @@ Die vollständige Spezifikation steht in `docs/pflichtenheft.md`. Lies sie vor j
   - Werte für `tasks.prioritaet` (niedrig, mittel, hoch) sind nicht im Pflichtenheft festgelegt
   - Ein Browser-Client wurde bisher nicht gebraucht, alle Mutationen laufen über Server Actions
   - `invoices.status` zusätzlich `storniert` (Original nach abgeschlossener Stornorechnung); Abschlagsrechnungen werden in der Schlussrechnung mit Nummer, Datum und Beträgen abgezogen
+  - Versendete Angebote sind nicht löschbar und bleiben ohne Deal erhalten (§ 257 HGB); `quotes.deal_id` ist dafür nullable
   - Retainer werden monatlich im Voraus am Starttag abgerechnet und verlängern sich nach der Mindestlaufzeit monatlich
   - Die Dublettenprüfung per Domain ignoriert Freemail-Domains (gmail.com, web.de usw.)
   - Aktivitäten erhalten immer die Firma des verknüpften Deals/Kontakts, damit sie in der Firmen-Zeitleiste erscheinen; für die 14-Tage-Warnung zählen Aktivitäten am Deal und Firmen-Aktivitäten ohne Deal
-- Nächster Schritt: Phase 5 – Dashboard und Feinschliff
+- Nächster Schritt: Abnahme auf echter Infrastruktur (Supabase Frankfurt, Vercel, AVVs, n8n-Workflows inkl. Backup) und die manuellen Punkte aus `docs/datenschutz.md`
 
 Aktualisiere diesen Abschnitt am Ende jeder Phase.
 
