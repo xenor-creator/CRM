@@ -34,3 +34,12 @@ export async function getInactiveDealActivity(
     ),
   );
 }
+
+export async function getContactOptions(supabase: SupabaseServerClient) {
+  const { data } = await supabase.from("contacts").select("id, vorname, nachname, company_id").order("nachname");
+  return (data ?? []).map((c) => ({
+    value: c.id,
+    label: [c.vorname, c.nachname].filter(Boolean).join(" "),
+    companyId: c.company_id,
+  }));
+}
