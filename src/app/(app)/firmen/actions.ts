@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 
 import { requireVerifiedSession } from "@/lib/auth/session";
+import { removeDeletedFiles } from "@/lib/files/storage-cleanup";
 import { failure, type FormState } from "@/lib/form-state";
 import { companySchema, firstContactSchema } from "@/lib/validation/company";
 import { checkbox, firstIssue } from "@/lib/validation/fields";
@@ -98,5 +99,6 @@ export async function deleteCompany(id: string) {
     console.error("delete company failed", error);
     throw new Error("Die Firma konnte nicht gelöscht werden.");
   }
+  await removeDeletedFiles(supabase);
   redirect("/firmen");
 }

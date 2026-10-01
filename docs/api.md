@@ -131,6 +131,25 @@ Rechnungen werden täglich ab dem Tag nach `faellig_am` automatisch auf `ueberfa
 
 Liefert das PDF (PDF/A-3 mit eingebetteter E-Rechnung `factur-x.xml`, ZUGFeRD-Profil EN 16931) einer abgeschlossenen Rechnung als `application/pdf`. Für Entwürfe und fremde Rechnungen antwortet die API mit `404`. In n8n den HTTP-Request-Knoten auf „Response Format: File“ stellen, um das PDF z. B. an eine E-Mail anzuhängen.
 
+### `GET /export`: vollständiges Backup
+
+Liefert alle Daten des Key-Eigentümers als JSON (`format: "agentur-crm-backup"`, `tables` mit allen Zeilen je Tabelle, Elterntabellen zuerst). Nicht enthalten sind das Webhook-Geheimnis, API-Keys und das Webhook-Protokoll. Dateiinhalte liegen in Supabase Storage und gehören nicht zum Datenbank-Backup von Supabase:
+
+- hochgeladene Dateien: `GET /files/{id}` (IDs aus `tables.files`)
+- Rechnungs-PDFs: `GET /invoices/{id}/pdf` (abgeschlossene Rechnungen aus `tables.invoices`)
+
+**Täglicher Backup-Workflow in n8n:**
+
+1. *Schedule Trigger* täglich, z. B. 03:00.
+2. *HTTP Request* `GET {{CRM_URL}}/api/v1/export` mit dem API-Key, „Response Format: File“.
+3. Datei in einem Speicher außerhalb von Supabase ablegen (z. B. Nextcloud, Google Drive, S3 in der EU), Dateiname `crm-backup-{{$now.toFormat('yyyy-MM-dd')}}.json`.
+4. Optional: aus `tables.files` die IDs lesen, je Datei `GET /files/{id}` abrufen und mit ablegen.
+5. Alte Backups nach Aufbewahrungsfrist löschen (z. B. 30 Tage); bei einem Fehler eine Benachrichtigung senden.
+
+### `GET /files/{id}`: hochgeladene Datei
+
+Liefert die Datei mit ihrem ursprünglichen Namen. Fremde oder unbekannte IDs → `404`.
+
 ## Webhooks
 
 Die Ziel-URL je Ereignis trägst du unter **Einstellungen → Webhooks an n8n** ein. Ohne URL wird das Ereignis nicht gesendet. Mit dem Button „Test“ schickst du ein Test-Ereignis (`"test": true`).

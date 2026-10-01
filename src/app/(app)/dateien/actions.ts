@@ -6,7 +6,7 @@ import { z } from "zod";
 import { requireVerifiedSession } from "@/lib/auth/session";
 import { checkUpload, storageFileName } from "@/lib/files/rules";
 import { FILE_LINK_TABLES, fileLinkColumns, fileLinkSchema, type FileLink } from "@/lib/files/links";
-import { purgeDeletedFiles } from "@/lib/files/storage-cleanup";
+import { removeDeletedFiles } from "@/lib/files/storage-cleanup";
 
 const BUCKET = "dokumente";
 
@@ -75,6 +75,6 @@ export async function deleteFile(id: string) {
   const { supabase } = await requireVerifiedSession();
   const { error } = await supabase.from("files").delete().eq("id", id);
   if (error) throw new Error("Die Datei konnte nicht gelöscht werden.");
-  await purgeDeletedFiles(supabase).catch((cleanupError: unknown) => console.error("storage cleanup failed", cleanupError));
+  await removeDeletedFiles(supabase);
   refresh();
 }

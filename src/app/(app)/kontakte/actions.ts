@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 
 import { requireVerifiedSession } from "@/lib/auth/session";
+import { removeDeletedFiles } from "@/lib/files/storage-cleanup";
 import { contactDuplicates } from "@/lib/duplicates";
 import { failure, type FormState } from "@/lib/form-state";
 import type { SupabaseServerClient } from "@/lib/supabase/server";
@@ -92,5 +93,6 @@ export async function deleteContact(id: string) {
     console.error("delete contact failed", error);
     throw new Error("Der Kontakt konnte nicht gelöscht werden.");
   }
+  await removeDeletedFiles(supabase);
   redirect(`/firmen/${data.company_id}`);
 }

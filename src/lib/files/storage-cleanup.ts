@@ -23,3 +23,8 @@ export async function purgeDeletedFiles(db: SupabaseClient<Database>): Promise<n
     if (queued.length < BATCH) return removed;
   }
 }
+
+// After a deletion in the UI: remove storage objects right away; the daily cron retries failures.
+export async function removeDeletedFiles(db: SupabaseClient<Database>): Promise<void> {
+  await purgeDeletedFiles(db).catch((error: unknown) => console.error("storage cleanup failed", error));
+}

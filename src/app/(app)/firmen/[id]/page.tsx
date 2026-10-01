@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatAddress } from "@/lib/address";
 import { requireVerifiedSession } from "@/lib/auth/session";
+import { companyDeletionText } from "@/lib/privacy/deletion";
 import { berlinDate } from "@/lib/dates";
 import { formatDate, formatEuro } from "@/lib/format";
 import {
@@ -40,7 +41,8 @@ export default async function CompanyPage(props: PageProps<"/firmen/[id]">) {
     notFound();
   }
 
-  const [contacts, deals, projects, retainers, invoices, activities, tasks] = await Promise.all([
+  const [deleteText, contacts, deals, projects, retainers, invoices, activities, tasks] = await Promise.all([
+    companyDeletionText(supabase, id, company.name),
     supabase
       .from("contacts")
       .select("id, vorname, nachname, email, telefon, position, ist_hauptkontakt")
@@ -111,7 +113,7 @@ export default async function CompanyPage(props: PageProps<"/firmen/[id]">) {
             </Button>
             <ConfirmActionButton
               action={deleteCompany.bind(null, id)}
-              confirmMessage={`„${company.name}“ mit allen Kontakten, Deals, Aktivitäten und Aufgaben löschen? Rechnungen bleiben erhalten.`}
+              confirmMessage={deleteText}
               variant="outline"
               size="sm"
             >

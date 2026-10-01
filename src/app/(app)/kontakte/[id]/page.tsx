@@ -1,4 +1,4 @@
-import { Pencil, Trash2 } from "lucide-react";
+import { FileJson, Pencil, Trash2 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -12,6 +12,7 @@ import { EmptyHint, SectionCard } from "@/components/section-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { requireVerifiedSession } from "@/lib/auth/session";
+import { contactDeletionText } from "@/lib/privacy/deletion";
 import { formatDateTime, formatEuro } from "@/lib/format";
 import { contactName } from "@/lib/names";
 
@@ -32,7 +33,8 @@ export default async function ContactPage(props: PageProps<"/kontakte/[id]">) {
     notFound();
   }
 
-  const [deals, activities] = await Promise.all([
+  const [deleteText, deals, activities] = await Promise.all([
+    contactDeletionText(supabase, contact, contactName(contact)),
     supabase
       .from("deals")
       .select("id, titel, wert_einmalig, deal_stages(name)")
@@ -67,6 +69,12 @@ export default async function ContactPage(props: PageProps<"/kontakte/[id]">) {
         actions={
           <>
             <Button asChild variant="outline" size="sm">
+              <a href={`/kontakte/${id}/datenauskunft`} download>
+                <FileJson />
+                Datenauskunft (JSON)
+              </a>
+            </Button>
+            <Button asChild variant="outline" size="sm">
               <Link href={`/kontakte/${id}/bearbeiten`}>
                 <Pencil />
                 Bearbeiten
@@ -74,7 +82,7 @@ export default async function ContactPage(props: PageProps<"/kontakte/[id]">) {
             </Button>
             <ConfirmActionButton
               action={deleteContact.bind(null, id)}
-              confirmMessage={`${name} mit allen Aktivitäten löschen?`}
+              confirmMessage={deleteText}
               variant="outline"
               size="sm"
             >

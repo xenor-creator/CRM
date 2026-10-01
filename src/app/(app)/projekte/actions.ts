@@ -4,6 +4,7 @@ import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requireVerifiedSession } from "@/lib/auth/session";
+import { removeDeletedFiles } from "@/lib/files/storage-cleanup";
 import { berlinDate } from "@/lib/dates";
 import { failure, success, type FormState } from "@/lib/form-state";
 import { timerMinutes } from "@/lib/projects";
@@ -45,6 +46,7 @@ export async function deleteProject(id: string) {
     console.error("delete project failed", error);
     throw new Error("Das Projekt konnte nicht gelöscht werden.");
   }
+  await removeDeletedFiles(supabase);
   redirect("/projekte");
 }
 

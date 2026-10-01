@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { requireVerifiedSession } from "@/lib/auth/session";
+import { removeDeletedFiles } from "@/lib/files/storage-cleanup";
 import { failure, success, type FormState } from "@/lib/form-state";
 import type { SupabaseServerClient } from "@/lib/supabase/server";
 import { dealSchema, stageChangeSchema } from "@/lib/validation/deal";
@@ -133,6 +134,7 @@ export async function deleteDeal(id: string) {
     console.error("delete deal failed", error);
     throw new Error("Der Deal konnte nicht gelöscht werden.");
   }
+  await removeDeletedFiles(supabase);
   redirect("/deals");
 }
 
