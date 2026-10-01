@@ -30,8 +30,12 @@ pnpm dev
 ### 3. Vercel
 
 1. Repo in Vercel importieren (Framework: Next.js). Die Funktionsregion `fra1` ist in `vercel.json` festgelegt.
-2. Umgebungsvariablen `NEXT_PUBLIC_SUPABASE_URL` und `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` für Production und Preview setzen.
-3. Jeder Push auf den Produktionsbranch löst ein Deployment aus.
+2. Umgebungsvariablen für Production und Preview setzen (siehe `.env.example`): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SERVICE_ROLE_KEY` (Secret Key, nur serverseitig) und `CRON_SECRET` (zufällige Zeichenkette, mindestens 16 Zeichen).
+3. Jeder Push auf den Produktionsbranch löst ein Deployment aus. Der tägliche Cron (`/api/cron/daily`, 05:00 UTC) ist in `vercel.json` hinterlegt.
+
+### 4. n8n anbinden
+
+API-Key und Webhook-Ziele richtest du unter **Einstellungen** ein. Alle Endpunkte, das Webhook-Format und ein fertiges Snippet zur Signaturprüfung stehen in [`docs/api.md`](docs/api.md).
 
 ## Befehle
 
@@ -51,3 +55,5 @@ supabase gen types typescript --linked > src/lib/supabase/database.types.ts
 - In der Datenbank greifen alle Policies nur mit `owner_id = auth.uid()` **und** einer 2FA-bestätigten Sitzung (`aal2`). Ein gestohlenes Passwort allein öffnet also keine Tabelle.
 - Versendete Rechnungen sind per Trigger unveränderlich. Es ist nur noch der Statuswechsel auf Bezahlt oder Überfällig möglich, Korrekturen laufen über eine Stornorechnung.
 - Kundennummern (`K1001` ff.) vergibt die Datenbank über eine gesperrte Zählertabelle.
+- Die REST-API (`/api/v1`) prüft API-Keys per SHA-256-Hash und arbeitet mit dem Service-Role-Key (nur in `src/lib/supabase/service.ts`). Jede Abfrage ist fest auf den Eigentümer des Keys begrenzt, auch verknüpfte IDs in Anfragen werden geprüft.
+- Webhooks entstehen per Datenbank-Trigger in derselben Transaktion wie die Änderung (Outbox) und werden mit HMAC-SHA256 signiert.

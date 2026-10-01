@@ -6,7 +6,19 @@ Die vollständige Spezifikation steht in `docs/pflichtenheft.md`. Lies sie vor j
 
 ## Aktueller Stand
 
-- Aktuelle Phase: **Phase 2 – Vertrieb** (Code fertig, Abnahme auf echtem Supabase offen); Phase 1 ebenfalls noch nicht auf echter Infrastruktur abgenommen
+- Aktuelle Phase: **Phase 3 – n8n-Anbindung** (Code fertig, Abnahme auf echter Infrastruktur offen); Phase 1 und 2 ebenfalls noch nicht auf echtem Supabase/Vercel abgenommen
+- Erledigt in Phase 3:
+  - Migration `20261002090000_api_webhooks.sql`: `settings.webhook_secret`, Outbox-Trigger für `deal.created/stage_changed/won/lost` (nur mit konfigurierter URL), `claim_webhook_events()` mit Sperre gegen Doppelversand, `next_webhook_retry()`, `enqueue_overdue_task_webhooks()` (einmal je Aufgabe, `tasks.ueberfaellig_gemeldet_am`), `find_duplicates_for_owner()` für die API; Owner-Funktionen nur für `service_role`
+  - API-Keys: `crm_` + 32 Zufallsbytes, gespeichert als SHA-256, einmalige Anzeige, Nutzungszeitpunkt, Widerruf (`src/lib/api/keys.ts`, `context.ts`)
+  - REST-API `/api/v1`: `leads` (Abgleich E-Mail → Domain → neu, offener Deal wird wiederverwendet), `companies`, `contacts`, `deals` (Phase per Name), `activities` (Verknüpfung per E-Mail), `tasks`, `invoices`; zod-Schemas in `src/lib/validation/api.ts` mit deutschen Meldungen (`z.config(z.locales.de())`), unbekannte Felder → 400
+  - Webhooks (`src/lib/webhooks/`): Signatur `X-CRM-Signature: sha256=<hex>` über `<X-CRM-Timestamp>.<Body>`, Zustellung per `after()` mit bis zu 3 Wiederholungen nach 10/60/150 s (`maxDuration = 300`), täglicher Cron `/api/cron/daily` (Vercel Cron, `CRON_SECRET`) für `task.overdue` und Liegengebliebenes
+  - Einstellungen: API-Keys, Webhook-Geheimnis, URL je Ereignis, Test-Versand, letzte Zustellungen
+  - Doku `docs/api.md` mit n8n-Snippet zur Signaturprüfung
+  - Getestet: 109 Unit-Tests, SQL-Tests Phase 1–3, API-Test gegen lokalen Stack (Auth, Validierung, Lead-Abgleich, Mandantentrennung, Signatur, Wiederholung), Browser-Abnahme (Lead per API, Phasenwechsel im Board → signierter Webhook)
+- Hinweise Phase 3:
+  - Die API umgeht RLS (Service Role); jede Abfrage muss `.eq("owner_id", ctx.ownerId)` setzen und Fremd-IDs mit `ownsRow`/`resolveLinks` prüfen
+  - `invoice.*` und `retainer.ending_soon` sind in den Einstellungen schon konfigurierbar, werden aber erst in Phase 4 ausgelöst
+  - Ratenbegrenzung bewusst nicht umgesetzt (nur eigene n8n-Instanzen)
 - Erledigt in Phase 2:
   - Migration `20261001090000_sales_rules.sql`: Verlustgrund-Pflicht und `abgeschlossen_am` per Trigger, Phase muss dem Eigentümer gehören, Gewonnen setzt Firma auf „Kunde“, generierte Spalte `companies.domain`, `find_duplicates()` (E-Mail, Website-Domain, E-Mail-Domain ohne Freemailer), View `deal_activity_status` (security invoker), ein Hauptkontakt je Firma, Einwilligungsdatum automatisch
   - Firmen: Liste mit Suche, Filter (Status, Branche), Sortierung; Anlegen mit optionalem Hauptkontakt und Dublettenwarnung; Detailseite mit Kontakten, Deals, Projekten, Retainern, Rechnungen, Aufgaben und Aktivitätenleiste; Bearbeiten, Löschen
@@ -31,10 +43,10 @@ Die vollständige Spezifikation steht in `docs/pflichtenheft.md`. Lies sie vor j
   - `invoices.nummer` und `quotes.nummer` bleiben bis zur Vergabe leer; die Vergabe erfolgt in Phase 4 beim Versenden, damit keine Lücken durch gelöschte Entwürfe entstehen
   - `tasks` dürfen ohne Verknüpfung existieren (Schnellerfassung); `activities` und `files` brauchen mindestens eine Verknüpfung
   - Werte für `tasks.prioritaet` (niedrig, mittel, hoch) sind nicht im Pflichtenheft festgelegt
-  - `service.ts` folgt in Phase 3 (API); ein Browser-Client wurde bisher nicht gebraucht, alle Mutationen laufen über Server Actions
+  - Ein Browser-Client wurde bisher nicht gebraucht, alle Mutationen laufen über Server Actions
   - Die Dublettenprüfung per Domain ignoriert Freemail-Domains (gmail.com, web.de usw.)
   - Aktivitäten erhalten immer die Firma des verknüpften Deals/Kontakts, damit sie in der Firmen-Zeitleiste erscheinen; für die 14-Tage-Warnung zählen Aktivitäten am Deal und Firmen-Aktivitäten ohne Deal
-- Nächster Schritt: Phase 3 – n8n-Anbindung (API-Keys, REST-Endpunkte, Webhooks)
+- Nächster Schritt: Phase 4 – Projekte, Retainer, Rechnungen (inkl. ZUGFeRD); vorher AVV-Frage zur Claude-API klären (siehe Pflichtenheft)
 
 Aktualisiere diesen Abschnitt am Ende jeder Phase.
 
