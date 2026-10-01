@@ -43,3 +43,31 @@ export async function getContactOptions(supabase: SupabaseServerClient) {
     companyId: c.company_id,
   }));
 }
+
+// Open deals without activity for 14 days, quietest first.
+export async function getStaleDeals(supabase: SupabaseServerClient) {
+  const inactive = await getInactiveDealActivity(supabase);
+  if (!inactive.size) return [];
+  const { data } = await supabase
+    .from("deals")
+    .select("id, titel, wert_einmalig, companies(id, name), deal_stages!inner(name, art)")
+    .in("id", [...inactive.keys()])
+    .eq("deal_stages.art", "offen");
+  return (data ?? [])
+    .map((deal) => ({ ...deal, letzte_aktivitaet: inactive.get(deal.id) ?? null }))
+    .toSorted((a, b) => (a.letzte_aktivitaet ?? "").localeCompare(b.letzte_aktivitaet ?? ""));
+}
+
+export type StaleDeal = Awaited<ReturnType<typeof getStaleDeals>>[number];
+
+// Open tasks due today or earlier, most urgent first.
+export async function getDueTasks(supabase: SupabaseServerClient, today: string) {
+  const { data } = await supabase
+    .from("tasks")
+    .select("id, titel, faellig_am, erledigt, prioritaet, companies(id, name), deals(id, titel)")
+    .eq("erledigt", false)
+    .lte("faellig_am", today)
+    .order("faellig_am")
+    .order("prioritaet", { ascending: false });
+  return data ?? [];
+}
