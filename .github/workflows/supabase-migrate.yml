@@ -1,0 +1,87 @@
+# Applies supabase/migrations to the hosted Supabase project. Started by hand
+# (Actions -> "Datenbank einrichten" -> Run workflow), so it works without a local CLI.
+#
+# Repository secrets (Settings -> Secrets and variables -> Actions):
+#   SUPABASE_ACCESS_TOKEN  personal access token (Supabase dashboard -> Account -> Access Tokens)
+#   SUPABASE_PROJECT_REF   project ref, the "xxxx" in https://xxxx.supabase.co
+#   SUPABASE_DB_PASSWORD   database password chosen when creating the project
+#   SUPABASE_DB_URL        optional: session pooler connection string, only if the linked
+#                          connection fails (Dashboard -> Connect -> Session pooler)
+name: Datenbank einrichten
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Nur anzeigen, welche Migrationen eingespielt würden"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supabase-migrate
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+      SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Check secrets
+        run: |
+          missing=""
+          [ -n "$SUPABASE_ACCESS_TOKEN" ] || missing="$missing SUPABASE_ACCESS_TOKEN"
+          [ -n "$SUPABASE_PROJECT_REF" ] || missing="$missing SUPABASE_PROJECT_REF"
+          [ -n "$SUPABASE_DB_PASSWORD" ] || missing="$missing SUPABASE_DB_PASSWORD"
+          if [ -n "$missing" ]; then
+            echo "::error::Fehlende Repository-Secrets:$missing"
+            exit 1
+          fi
+
+      - name: Link project
+        run: supabase link --project-ref "$SUPABASE_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
+
+      - name: Apply migrations
+        run: |
+          args=""
+          [ "${{ inputs.dry_run }}" = "true" ] && args="--dry-run"
+          if [ -n "$SUPABASE_DB_URL" ]; then
+            supabase db push --db-url "$SUPABASE_DB_URL" $args
+          else
+            supabase db push --linked $args
+          fi
+
+      - name: Show applied migrations
+        run: supabase migration list --linked
+
+      # Rule 3 in CLAUDE.md: types must match the schema. The generated file is attached to the
+      # run; a difference only produces a warning, the database is already migrated.
+      - name: Compare generated types
+        if: ${{ !inputs.dry_run }}
+        run: |
+          supabase gen types typescript --linked > database.types.ts
+          if diff -q database.types.ts src/lib/supabase/database.types.ts > /dev/null; then
+            echo "Typen sind aktuell."
+          else
+            echo "::warning::Die generierten Typen weichen von src/lib/supabase/database.types.ts ab. Datei aus den Artefakten dieses Laufs übernehmen."
+          fi
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !inputs.dry_run }}
+        with:
+          name: database-types
+          path: database.types.ts
+          retention-days: 7

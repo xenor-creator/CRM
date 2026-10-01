@@ -16,6 +16,7 @@ Voraussetzungen: Node.js 22, pnpm 10, [Supabase CLI](https://supabase.com/docs/g
    supabase db push                # wendet supabase/migrations an
    supabase config push            # übernimmt [auth] aus supabase/config.toml: Registrierung aus, TOTP an
    ```
+   Ohne lokale CLI (z. B. am iPad): Repository-Secrets `SUPABASE_ACCESS_TOKEN`, `SUPABASE_PROJECT_REF` und `SUPABASE_DB_PASSWORD` anlegen und unter **Actions → „Datenbank einrichten“ → Run workflow** starten (`.github/workflows/supabase-migrate.yml`). Die Auth-Einstellungen dann im Dashboard setzen: Registrierung aus, TOTP an, Passwort mindestens 12 Zeichen.
 3. Unter **Authentication → URL Configuration** die Site-URL auf die Vercel-Domain setzen.
 4. Den einzigen Nutzer anlegen: **Authentication → Users → Add user → Create new user** (E-Mail + starkes Passwort, „Auto Confirm User“ aktivieren). Beim ersten Login wird die Zwei-Faktor-Einrichtung erzwungen.
 
