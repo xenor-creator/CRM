@@ -61,7 +61,7 @@ export async function deleteQuoteDraft(id: string) {
   const { data } = await supabase.from("quotes").select("deal_id").eq("id", id).single();
   const { error } = await supabase.from("quotes").delete().eq("id", id).eq("status", "entwurf");
   if (error) throw new Error("Der Entwurf konnte nicht gelöscht werden.");
-  redirect(data ? `/deals/${data.deal_id}` : "/deals");
+  redirect(data?.deal_id ? `/deals/${data.deal_id}` : "/deals");
 }
 
 // Assigns the number (database), freezes the quote and stores the PDF.

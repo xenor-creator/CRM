@@ -361,6 +361,7 @@ export type Database = {
           company_id: string | null
           created_at: string
           deal_id: string | null
+          groesse: number | null
           id: string
           name: string
           owner_id: string
@@ -373,6 +374,7 @@ export type Database = {
           company_id?: string | null
           created_at?: string
           deal_id?: string | null
+          groesse?: number | null
           id?: string
           name: string
           owner_id?: string
@@ -385,6 +387,7 @@ export type Database = {
           company_id?: string | null
           created_at?: string
           deal_id?: string | null
+          groesse?: number | null
           id?: string
           name?: string
           owner_id?: string
@@ -643,7 +646,7 @@ export type Database = {
           absender: Json | null
           created_at: string
           datum: string | null
-          deal_id: string
+          deal_id: string | null
           empfaenger: Json | null
           gueltig_bis: string | null
           hinweis: string | null
@@ -663,7 +666,7 @@ export type Database = {
           absender?: Json | null
           created_at?: string
           datum?: string | null
-          deal_id: string
+          deal_id?: string | null
           empfaenger?: Json | null
           gueltig_bis?: string | null
           hinweis?: string | null
@@ -683,7 +686,7 @@ export type Database = {
           absender?: Json | null
           created_at?: string
           datum?: string | null
-          deal_id?: string
+          deal_id?: string | null
           empfaenger?: Json | null
           gueltig_bis?: string | null
           hinweis?: string | null
@@ -865,6 +868,30 @@ export type Database = {
           webhook_urls?: Json
           website?: string | null
           zahlungsziel_tage?: number
+        }
+        Relationships: []
+      }
+      storage_deletions: {
+        Row: {
+          created_at: string
+          id: string
+          owner_id: string
+          pfad: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          owner_id?: string
+          pfad: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          owner_id?: string
+          pfad?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -1167,11 +1194,23 @@ export type Database = {
         }
         Returns: string
       }
+      purge_old_webhook_events: {
+        Args: {
+          p_before: string
+        }
+        Returns: number
+      }
       seller_snapshot: {
         Args: {
           p_owner: string
         }
         Returns: Json
+      }
+      storage_path_owner: {
+        Args: {
+          p_path: string
+        }
+        Returns: string
       }
       validated_line_items: {
         Args: {
