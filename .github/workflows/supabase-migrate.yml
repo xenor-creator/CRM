@@ -40,16 +40,31 @@ jobs:
         with:
           version: latest
 
+      # Values pasted on mobile often carry spaces or line breaks; trim them, mask the trimmed
+      # values and check the formats so a wrong value fails with a clear message.
       - name: Check secrets
         run: |
-          missing=""
-          [ -n "$SUPABASE_ACCESS_TOKEN" ] || missing="$missing SUPABASE_ACCESS_TOKEN"
-          [ -n "$SUPABASE_PROJECT_REF" ] || missing="$missing SUPABASE_PROJECT_REF"
-          [ -n "$SUPABASE_DB_PASSWORD" ] || missing="$missing SUPABASE_DB_PASSWORD"
-          if [ -n "$missing" ]; then
-            echo "::error::Fehlende Repository-Secrets:$missing"
-            exit 1
+          trim() { printf '%s' "$1" | tr -d '[:space:]'; }
+          token="$(trim "$SUPABASE_ACCESS_TOKEN")"
+          ref="$(trim "$SUPABASE_PROJECT_REF")"
+          password="$(printf '%s' "$SUPABASE_DB_PASSWORD" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+          for value in "$token" "$ref" "$password"; do [ -n "$value" ] && echo "::add-mask::$value"; done
+          failed=0
+          if [ -z "$token" ]; then echo "::error::Secret SUPABASE_ACCESS_TOKEN fehlt."; failed=1
+          elif [ "${token#sbp_}" = "$token" ]; then
+            echo "::error::SUPABASE_ACCESS_TOKEN ist kein Supabase-Zugangstoken (muss mit sbp_ beginnen). Neues Token unter supabase.com/dashboard/account/tokens erzeugen."; failed=1
           fi
+          if [ -z "$ref" ]; then echo "::error::Secret SUPABASE_PROJECT_REF fehlt."; failed=1
+          elif ! printf '%s' "$ref" | grep -Eq '^[a-z0-9]{20}$'; then
+            echo "::error::SUPABASE_PROJECT_REF muss die 20-stellige Projekt-ID sein (Project Settings -> General -> Project ID), ohne https:// und .supabase.co."; failed=1
+          fi
+          if [ -z "$password" ]; then echo "::error::Secret SUPABASE_DB_PASSWORD fehlt."; failed=1; fi
+          [ "$failed" = 0 ] || exit 1
+          {
+            echo "SUPABASE_ACCESS_TOKEN=$token"
+            echo "SUPABASE_PROJECT_REF=$ref"
+            echo "SUPABASE_DB_PASSWORD=$password"
+          } >> "$GITHUB_ENV"
 
       - name: Link project
         run: supabase link --project-ref "$SUPABASE_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
