@@ -7,6 +7,9 @@ import { signOut } from "@/lib/auth/actions";
 import { requireVerifiedSession } from "@/lib/auth/session";
 import { getCompanyOptions, getOpenDealOptions } from "@/lib/queries";
 
+// Server Actions may deliver webhooks with retries after responding (see lib/webhooks).
+export const maxDuration = 300;
+
 export default async function AppLayout({ children }: LayoutProps<"/">) {
   const { supabase, email } = await requireVerifiedSession();
   const [companyOptions, dealOptions] = await Promise.all([

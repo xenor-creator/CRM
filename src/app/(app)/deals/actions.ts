@@ -9,6 +9,7 @@ import { failure, success, type FormState } from "@/lib/form-state";
 import type { SupabaseServerClient } from "@/lib/supabase/server";
 import { dealSchema, stageChangeSchema } from "@/lib/validation/deal";
 import { firstIssue } from "@/lib/validation/fields";
+import { scheduleWebhookDelivery } from "@/lib/webhooks/dispatcher";
 
 const SAVE_ERROR = "Der Deal konnte nicht gespeichert werden. Bitte erneut versuchen.";
 const LOSS_REASON_REQUIRED = "Beim Wechsel auf „Verloren“ ist ein Verlustgrund Pflicht.";
@@ -44,9 +45,12 @@ export async function moveDeal(
   if (!z.uuid().safeParse(id).success) {
     return { ok: false, error: "Unbekannter Deal." };
   }
-  const { supabase } = await requireVerifiedSession();
+  const { supabase, userId } = await requireVerifiedSession();
   const result = await changeStage(supabase, id, parsed.data.stage_id, parsed.data.verlustgrund);
-  if (result.ok) refresh();
+  if (result.ok) {
+    scheduleWebhookDelivery(userId);
+    refresh();
+  }
   return result;
 }
 
@@ -60,11 +64,12 @@ export async function changeDealStage(
   if (!parsed.success) {
     return failure(firstIssue(parsed.error), formData);
   }
-  const { supabase } = await requireVerifiedSession();
+  const { supabase, userId } = await requireVerifiedSession();
   const result = await changeStage(supabase, id, parsed.data.stage_id, parsed.data.verlustgrund);
   if (!result.ok) {
     return failure(result.error, formData);
   }
+  scheduleWebhookDelivery(userId);
   refresh();
   return success();
 }
@@ -86,7 +91,7 @@ export async function createDeal(_prev: FormState, formData: FormData): Promise<
     return failure(firstIssue(deal.error), formData);
   }
 
-  const { supabase } = await requireVerifiedSession();
+  const { supabase, userId } = await requireVerifiedSession();
   const stageId = await firstStageId(supabase);
   if (!stageId) {
     return failure("Es ist keine offene Vertriebsphase angelegt.", formData);
@@ -101,6 +106,7 @@ export async function createDeal(_prev: FormState, formData: FormData): Promise<
     console.error("insert deal failed", error);
     return failure(SAVE_ERROR, formData);
   }
+  scheduleWebhookDelivery(userId);
   redirect(`/deals/${data.id}`);
 }
 
