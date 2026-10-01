@@ -102,8 +102,8 @@ export default async function DealPage(props: PageProps<"/deals/[id]">) {
         </p>
       )}
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="grid content-start gap-6 lg:col-span-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="grid grid-cols-1 content-start gap-6 lg:col-span-2">
           <SectionCard title="Details">
             <DefinitionList
               items={[
@@ -139,7 +139,7 @@ export default async function DealPage(props: PageProps<"/deals/[id]">) {
             </div>
           </SectionCard>
         </div>
-        <div className="grid content-start gap-6">
+        <div className="grid grid-cols-1 content-start gap-6">
           <SectionCard title="Phase">
             <StageForm
               key={deal.stage_id}

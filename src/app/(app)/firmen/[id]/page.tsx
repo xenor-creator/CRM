@@ -121,8 +121,8 @@ export default async function CompanyPage(props: PageProps<"/firmen/[id]">) {
         }
       />
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="grid content-start gap-6 lg:col-span-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="grid grid-cols-1 content-start gap-6 lg:col-span-2">
           <SectionCard title="Stammdaten">
             <DefinitionList
               items={[
@@ -270,7 +270,7 @@ export default async function CompanyPage(props: PageProps<"/firmen/[id]">) {
           </div>
         </div>
 
-        <div className="grid content-start gap-6">
+        <div className="grid grid-cols-1 content-start gap-6">
           <SectionCard title="Aufgaben">
             <div className="grid gap-4">
               <TaskList tasks={tasks.data ?? []} today={berlinDate()} showLinks />

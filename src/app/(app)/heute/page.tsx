@@ -42,7 +42,7 @@ export default async function TodayPage() {
   return (
     <>
       <PageHeader title="Heute" description={formatDate(today)} />
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <SectionCard title="Fällige und überfällige Aufgaben">
           <TaskList tasks={tasks ?? []} today={today} showLinks />
         </SectionCard>
