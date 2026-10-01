@@ -95,3 +95,19 @@ export const commaList = z.preprocess(asString, z.string()).transform((value) =>
 export function firstIssue(error: z.ZodError): string {
   return error.issues[0]?.message ?? "Ungültige Eingabe.";
 }
+
+// Optional euro amount; empty input becomes null.
+export const optionalEuroAmount = z.preprocess(asString, z.string()).transform((value, ctx) => {
+  if (value.trim() === "") {
+    return null;
+  }
+  const parsed = parseEuroInput(value);
+  if (!parsed.ok) {
+    ctx.addIssue({ code: "custom", message: parsed.error });
+    return z.NEVER;
+  }
+  return parsed.value;
+});
+
+export const requiredDate = (message: string) =>
+  z.preprocess(asString, z.string().trim().regex(/^\d{4}-\d{2}-\d{2}$/, message));

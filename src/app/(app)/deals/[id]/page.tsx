@@ -21,6 +21,7 @@ import { contactName } from "@/lib/names";
 
 import { changeDealStage, deleteDeal } from "../actions";
 import { StageForm } from "../stage-form";
+import { WonFollowUpForm } from "../won-follow-up";
 
 export const metadata: Metadata = { title: "Deal" };
 
@@ -37,7 +38,7 @@ export default async function DealPage(props: PageProps<"/deals/[id]">) {
     notFound();
   }
 
-  const [stages, activities, tasks, status] = await Promise.all([
+  const [stages, activities, tasks, status, projects, retainers] = await Promise.all([
     supabase.from("deal_stages").select("id, name, position, art").order("position"),
     supabase
       .from("activities")
@@ -52,7 +53,13 @@ export default async function DealPage(props: PageProps<"/deals/[id]">) {
       .eq("erledigt", false)
       .order("faellig_am", { ascending: true, nullsFirst: false }),
     supabase.from("deal_activity_status").select("letzte_aktivitaet").eq("deal_id", id).maybeSingle(),
+    supabase.from("projects").select("id, titel").eq("deal_id", id),
+    supabase.from("retainers").select("id, titel").eq("deal_id", id),
   ]);
+  const followUps = [
+    ...(projects.data ?? []).map((p) => ({ href: `/projekte/${p.id}`, label: `Projekt: ${p.titel}` })),
+    ...(retainers.data ?? []).map((r) => ({ href: `/retainer/${r.id}`, label: `Retainer: ${r.titel}` })),
+  ];
 
   const lastActivity = status.data?.letzte_aktivitaet;
   const isInactive =
@@ -140,6 +147,23 @@ export default async function DealPage(props: PageProps<"/deals/[id]">) {
           </SectionCard>
         </div>
         <div className="grid grid-cols-1 content-start gap-6">
+          {deal.deal_stages?.art === "gewonnen" && (
+            <SectionCard title={followUps.length ? "Umsetzung" : "Projekt oder Retainer anlegen"}>
+              {followUps.length ? (
+                <ul className="grid gap-1 text-sm">
+                  {followUps.map((f) => (
+                    <li key={f.href}>
+                      <Link href={f.href} className="hover:underline">
+                        {f.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <WonFollowUpForm deal={deal} today={berlinDate()} />
+              )}
+            </SectionCard>
+          )}
           <SectionCard title="Phase">
             <StageForm
               key={deal.stage_id}

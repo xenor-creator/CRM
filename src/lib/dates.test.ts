@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  addDays,
   berlinDate,
   berlinLocalToIso,
   daysSince,
@@ -56,5 +57,13 @@ describe("dueState", () => {
     expect(dueState("2026-09-30", "2026-09-30")).toBe("heute");
     expect(dueState("2026-10-01", "2026-09-30")).toBe("spaeter");
     expect(dueState(null, "2026-09-30")).toBe("ohne");
+  });
+});
+
+describe("addDays", () => {
+  it("adds days across month and year boundaries", () => {
+    expect(addDays("2026-09-30", 7)).toBe("2026-10-07");
+    expect(addDays("2026-12-28", 5)).toBe("2027-01-02");
+    expect(addDays("2028-03-01", -1)).toBe("2028-02-29");
   });
 });

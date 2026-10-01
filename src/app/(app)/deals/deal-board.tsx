@@ -33,6 +33,7 @@ import { formatDate, formatEuro } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 import { moveDeal } from "./actions";
+import { WonFollowUpForm, type WonDeal } from "./won-follow-up";
 
 type PendingLoss = { dealId: string; stageId: string; titel: string };
 
@@ -40,10 +41,12 @@ export function DealBoard({
   stages,
   deals,
   inactiveDealIds,
+  today,
 }: {
   stages: Stage[];
   deals: BoardDeal[];
   inactiveDealIds: string[];
+  today: string;
 }) {
   const [optimisticDeals, applyMove] = useOptimistic(
     deals,
@@ -53,6 +56,7 @@ export function DealBoard({
   const [activeId, setActiveId] = useState<string | null>(null);
   const [pendingLoss, setPendingLoss] = useState<PendingLoss | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [wonDeal, setWonDeal] = useState<WonDeal | null>(null);
   // Stable id so dnd-kit's accessibility attributes match between server and client render.
   const dndId = useId();
 
@@ -71,7 +75,12 @@ export function DealBoard({
     startTransition(async () => {
       applyMove({ dealId, stageId });
       const result = await moveDeal(dealId, stageId, verlustgrund);
-      if (!result.ok) setError(result.error);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      const deal = optimisticDeals.find((d) => d.id === dealId);
+      if (deal && stageById.get(stageId)?.art === "gewonnen") setWonDeal(deal);
     });
   };
 
@@ -119,6 +128,16 @@ export function DealBoard({
           setPendingLoss(null);
         }}
       />
+
+      <Dialog open={wonDeal !== null} onOpenChange={(open) => !open && setWonDeal(null)}>
+        <DialogContent className="max-h-[90svh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Deal gewonnen</DialogTitle>
+            <DialogDescription>{wonDeal?.titel}: Projekt, Retainer oder beides anlegen?</DialogDescription>
+          </DialogHeader>
+          {wonDeal && <WonFollowUpForm deal={wonDeal} today={today} />}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

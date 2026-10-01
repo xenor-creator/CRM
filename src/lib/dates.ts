@@ -84,3 +84,9 @@ export function dueState(dueDate: string | null, today: string = berlinDate()): 
   if (dueDate < today) return "ueberfaellig";
   return dueDate === today ? "heute" : "spaeter";
 }
+
+// Calendar arithmetic on YYYY-MM-DD strings (no time zone involved).
+export function addDays(isoDate: string, days: number): string {
+  const [y, m, d] = isoDate.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
+}

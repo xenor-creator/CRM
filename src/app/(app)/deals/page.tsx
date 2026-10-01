@@ -5,6 +5,7 @@ import Link from "next/link";
 import { PageHeader } from "@/components/page-header";
 import { Button } from "@/components/ui/button";
 import { requireVerifiedSession } from "@/lib/auth/session";
+import { berlinDate } from "@/lib/dates";
 import { CLOSED_DEALS_WINDOW_DAYS, isRecentlyClosed } from "@/lib/deals";
 import { getInactiveDealActivity } from "@/lib/queries";
 
@@ -47,7 +48,7 @@ export default async function DealsPage() {
           Die Deals konnten nicht geladen werden.
         </p>
       ) : (
-        <DealBoard stages={stages ?? []} deals={visibleDeals} inactiveDealIds={[...inactive.keys()]} />
+        <DealBoard stages={stages ?? []} deals={visibleDeals} inactiveDealIds={[...inactive.keys()]} today={berlinDate()} />
       )}
     </>
   );

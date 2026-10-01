@@ -8,7 +8,8 @@ import { requireVerifiedSession } from "@/lib/auth/session";
 import { failure, success, type FormState } from "@/lib/form-state";
 import type { SupabaseServerClient } from "@/lib/supabase/server";
 import { dealSchema, stageChangeSchema } from "@/lib/validation/deal";
-import { firstIssue } from "@/lib/validation/fields";
+import { checkbox, firstIssue } from "@/lib/validation/fields";
+import { projectSchema, retainerSchema } from "@/lib/validation/project";
 import { scheduleWebhookDelivery } from "@/lib/webhooks/dispatcher";
 
 const SAVE_ERROR = "Der Deal konnte nicht gespeichert werden. Bitte erneut versuchen.";
@@ -133,4 +134,49 @@ export async function deleteDeal(id: string) {
     throw new Error("Der Deal konnte nicht gelöscht werden.");
   }
   redirect("/deals");
+}
+
+// Fields of the "won" follow-up form carry a prefix per target (projekt_ / retainer_).
+function prefixed(formData: FormData, prefix: string): Record<string, FormDataEntryValue> {
+  return Object.fromEntries(
+    [...formData.entries()].filter(([key]) => key.startsWith(prefix)).map(([key, value]) => [key.slice(prefix.length), value]),
+  );
+}
+
+// Creates a project and/or retainer from a won deal with the values taken over from the deal.
+export async function createFromWonDeal(dealId: string, _prev: FormState, formData: FormData): Promise<FormState> {
+  const wantsProject = checkbox.parse(formData.get("projekt_anlegen"));
+  const wantsRetainer = checkbox.parse(formData.get("retainer_anlegen"));
+  if (!wantsProject && !wantsRetainer) {
+    return failure("Bitte Projekt, Retainer oder beides auswählen.", formData);
+  }
+
+  const { supabase } = await requireVerifiedSession();
+  const { data: deal } = await supabase.from("deals").select("company_id").eq("id", dealId).single();
+  if (!deal) return failure("Deal nicht gefunden.", formData);
+  const links = { company_id: deal.company_id, deal_id: dealId };
+
+  const project = wantsProject
+    ? projectSchema.safeParse({ ...prefixed(formData, "projekt_"), ...links, status: "geplant" })
+    : null;
+  if (project && !project.success) return failure(`Projekt: ${firstIssue(project.error)}`, formData);
+  const retainer = wantsRetainer ? retainerSchema.safeParse({ ...prefixed(formData, "retainer_"), ...links }) : null;
+  if (retainer && !retainer.success) return failure(`Retainer: ${firstIssue(retainer.error)}`, formData);
+
+  let target = `/deals/${dealId}`;
+  if (retainer?.success) {
+    const { data, error } = await supabase
+      .from("retainers")
+      .insert({ ...retainer.data, naechste_abrechnung: retainer.data.start })
+      .select("id")
+      .single();
+    if (error) return failure("Der Retainer konnte nicht angelegt werden.", formData);
+    target = `/retainer/${data.id}`;
+  }
+  if (project?.success) {
+    const { data, error } = await supabase.from("projects").insert(project.data).select("id").single();
+    if (error) return failure("Das Projekt konnte nicht angelegt werden.", formData);
+    target = `/projekte/${data.id}`;
+  }
+  redirect(target);
 }
