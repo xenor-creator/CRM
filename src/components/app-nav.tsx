@@ -41,7 +41,7 @@ export function AppNav({ className }: { className?: string }) {
             href={href}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "flex shrink-0 items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+              "flex shrink-0 items-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors pointer-coarse:min-h-11",
               active
                 ? "bg-sidebar-accent text-sidebar-accent-foreground"
                 : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",

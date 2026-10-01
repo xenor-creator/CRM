@@ -105,3 +105,18 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Touch screens: controls at least 44 px high (Apple HIG, WCAG 2.5.5), icon buttons square.
+   Desktop keeps the compact shadcn sizes; components/ui stays untouched. */
+@layer base {
+  @media (pointer: coarse) {
+    [data-slot="button"],
+    [data-slot="input"],
+    [data-slot="native-select"] {
+      min-height: 2.75rem;
+    }
+    [data-slot="button"]:has(> svg:only-child) {
+      min-width: 2.75rem;
+    }
+  }
+}

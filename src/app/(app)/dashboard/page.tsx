@@ -8,6 +8,7 @@ import { EmptyHint, SectionCard } from "@/components/section-card";
 import { StaleDealList } from "@/components/stale-deal-list";
 import { StatTile } from "@/components/stat-tile";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { requireVerifiedSession } from "@/lib/auth/session";
 import { pipeline, receivables, revenue } from "@/lib/dashboard";
 import { addDays, berlinDate, INACTIVITY_DAYS } from "@/lib/dates";
@@ -100,7 +101,11 @@ export default async function DashboardPage() {
       </section>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <SectionCard title="Aufgaben für heute" action={<Link href="/heute" className="text-sm hover:underline">Alle</Link>}>
+        <SectionCard title="Aufgaben für heute" action={
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/heute">Alle anzeigen</Link>
+            </Button>
+          }>
           <TaskList tasks={tasks} today={today} showLinks />
         </SectionCard>
         <SectionCard title={`Projekte mit Deadline in ${DEADLINE_DAYS} Tagen`}>
