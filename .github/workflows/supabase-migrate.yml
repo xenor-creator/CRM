@@ -65,7 +65,12 @@ jobs:
           fi
 
       - name: Show applied migrations
-        run: supabase migration list --linked
+        run: |
+          if [ -n "$SUPABASE_DB_URL" ]; then
+            supabase migration list --db-url "$SUPABASE_DB_URL"
+          else
+            supabase migration list --linked
+          fi
 
       # Rule 3 in CLAUDE.md: types must match the schema. The generated file is attached to the
       # run; a difference only produces a warning, the database is already migrated.
