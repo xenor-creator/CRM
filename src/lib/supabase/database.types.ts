@@ -740,6 +740,7 @@ export type Database = {
           telefon: string | null
           updated_at: string
           ust_id: string | null
+          webhook_secret: string
           webhook_urls: Json
           website: string | null
           zahlungsziel_tage: number
@@ -765,6 +766,7 @@ export type Database = {
           telefon?: string | null
           updated_at?: string
           ust_id?: string | null
+          webhook_secret?: string
           webhook_urls?: Json
           website?: string | null
           zahlungsziel_tage?: number
@@ -790,6 +792,7 @@ export type Database = {
           telefon?: string | null
           updated_at?: string
           ust_id?: string | null
+          webhook_secret?: string
           webhook_urls?: Json
           website?: string | null
           zahlungsziel_tage?: number
@@ -808,6 +811,7 @@ export type Database = {
           prioritaet: Database["public"]["Enums"]["task_prioritaet"]
           project_id: string | null
           titel: string
+          ueberfaellig_gemeldet_am: string | null
           updated_at: string
         }
         Insert: {
@@ -821,6 +825,7 @@ export type Database = {
           prioritaet?: Database["public"]["Enums"]["task_prioritaet"]
           project_id?: string | null
           titel: string
+          ueberfaellig_gemeldet_am?: string | null
           updated_at?: string
         }
         Update: {
@@ -834,6 +839,7 @@ export type Database = {
           prioritaet?: Database["public"]["Enums"]["task_prioritaet"]
           project_id?: string | null
           titel?: string
+          ueberfaellig_gemeldet_am?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -908,6 +914,7 @@ export type Database = {
           event: string
           fehler: string | null
           gesendet_am: string | null
+          gesperrt_bis: string | null
           id: string
           naechster_versuch_am: string | null
           owner_id: string
@@ -923,6 +930,7 @@ export type Database = {
           event: string
           fehler?: string | null
           gesendet_am?: string | null
+          gesperrt_bis?: string | null
           id?: string
           naechster_versuch_am?: string | null
           owner_id?: string
@@ -938,6 +946,7 @@ export type Database = {
           event?: string
           fehler?: string | null
           gesendet_am?: string | null
+          gesperrt_bis?: string | null
           id?: string
           naechster_versuch_am?: string | null
           owner_id?: string
@@ -961,14 +970,54 @@ export type Database = {
       }
     }
     Functions: {
+      claim_webhook_events: {
+        Args: {
+          p_owner?: string
+          p_limit?: number
+        }
+        Returns: Database["public"]["Tables"]["webhook_events"]["Row"][]
+      }
       create_owner_defaults: {
         Args: {
           p_owner: string
         }
         Returns: undefined
       }
+      deal_webhook_data: {
+        Args: {
+          p_deal: Database["public"]["Tables"]["deals"]["Row"]
+        }
+        Returns: Json
+      }
+      enqueue_overdue_task_webhooks: {
+        Args: {
+          p_today: string
+        }
+        Returns: number
+      }
+      enqueue_webhook: {
+        Args: {
+          p_owner: string
+          p_event: string
+          p_data: Json
+        }
+        Returns: undefined
+      }
       find_duplicates: {
         Args: {
+          p_email?: string
+          p_website?: string
+        }
+        Returns: {
+          company_id: string
+          company_name: string
+          kundennummer: string
+          grund: string
+        }[]
+      }
+      find_duplicates_for_owner: {
+        Args: {
+          p_owner: string
           p_email?: string
           p_website?: string
         }
@@ -998,6 +1047,12 @@ export type Database = {
           p_jahr?: number
         }
         Returns: number
+      }
+      next_webhook_retry: {
+        Args: {
+          p_owner: string
+        }
+        Returns: string
       }
       normalize_domain: {
         Args: {
